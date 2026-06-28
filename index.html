@@ -62,21 +62,28 @@
                 </div>
             </div>
             
-            <div id="ui-header-stats" class="hidden flex items-center gap-4">
-                <div class="text-right hidden sm:block">
-                    <p id="ui-jogador-nome" class="text-base font-extrabold text-slate-800">Jogador</p>
-                    <p id="ui-jogador-idade" class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md inline-block border-2 border-slate-200">15 Anos</p>
-                </div>
-                <div class="bg-slate-100 px-4 py-1.5 rounded-xl flex items-center gap-2 border-2 border-slate-200">
-                    <i class="fa-solid fa-calendar-day text-slate-600 text-lg"></i>
-                    <div class="flex flex-col">
-                        <span class="text-[8px] font-black uppercase text-slate-500 leading-none">Mês</span>
-                        <div class="leading-none mt-0.5">
-                            <span id="ui-mes-atual" class="text-base font-black text-slate-800">1</span>
-                        </div>
-                    </div>
+            <div id="ui-header-stats" class="hidden flex items-center gap-6 bg-white border-2 border-slate-200 px-5 py-2.5 rounded-2xl shadow-sm">
+            <div class="flex items-center gap-2 border-r-2 border-slate-100 pr-4">
+                <span class="text-base">🪙</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase leading-none">Mão</span>
+                    <span id="ui-header-saldo" class="text-sm font-black text-slate-700 leading-tight">0.00 €</span>
                 </div>
             </div>
+            
+            <div class="flex items-center gap-2 border-r-2 border-slate-100 pr-4">
+                <span class="text-base">🏦</span>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-extrabold text-slate-400 uppercase leading-none">Banco</span>
+                    <span id="ui-header-poupanca" class="text-sm font-black text-slate-700 leading-tight">0.00 €</span>
+                </div>
+            </div>
+
+            <div class="text-right">
+                <h3 id="ui-jogador-nome" class="font-black text-slate-800 leading-tight">Jogador</h3>
+                <span id="ui-jogador-idade" class="text-xs font-bold text-slate-500">15 Anos</span>
+            </div>
+        </div>
         </div>
     </header>
 
