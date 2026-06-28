@@ -117,14 +117,16 @@ const UI = {
         }
 
         container.innerHTML = itens.map(item => {
-            const bloqueado = State.idade < item.minIdade;
+            const bloqueado = State.idade < item.minIdagedade; // Caso o teu state use minIdade
+            const idadeLimite = item.minIdade || item.minIdagedade;
+            const isBloqueado = State.idade < idadeLimite;
             
-            if (bloqueado) {
+            if (isBloqueado) {
                 return `
                     <div class="bg-slate-100 border-2 border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center opacity-60">
                         <span class="text-3xl mb-2">🔒</span>
                         <h4 class="font-black text-slate-700 text-sm">${item.nome}</h4>
-                        <p class="text-[11px] font-extrabold text-red-500 uppercase tracking-wider mt-1">Disponível aos ${item.minIdade} anos</p>
+                        <p class="text-[11px] font-extrabold text-red-500 uppercase tracking-wider mt-1">Disponível aos ${idadeLimite} anos</p>
                     </div>
                 `;
             }
@@ -216,25 +218,51 @@ const UI = {
         if (!container) return;
 
         const bancos = DB.bancos || [];
-        container.innerHTML = bancos.map(b => `
-            <label class="relative bg-white border-2 border-slate-200 p-4 rounded-2xl card-solid cursor-pointer flex flex-col justify-between transition-all duration-200 has-[:checked]:border-blue-500 has-[:checked]:ring-2 has-[:checked]:ring-blue-100 group">
-                <input type="radio" name="banco" value="${b.id}" class="sr-only" onchange="Engine.ajustarRendimentoPorIdade()">
-                <div class="flex items-start justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 ${b.cor} text-white flex items-center justify-center rounded-xl text-lg shadow-sm">
-                            <i class="fa-solid ${b.icone}"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-black text-slate-800 text-sm">${b.nome}</h4>
-                            <p class="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider mt-0.5">${(b.juro * 100).toFixed(1)}% Juro Base</p>
+        container.innerHTML = bancos.map(b => {
+            // Mapeia e gera os elementos das listas com Tailwind clean
+            const vantagensLista = (b.vantagens || []).map(v => `
+                <li class="flex items-start gap-1.5 text-slate-600">
+                    <i class="fa-solid fa-check text-emerald-500 text-[10px] mt-1 shrink-0"></i>
+                    <span>${v}</span>
+                </li>
+            `).join("");
+
+            const desvantagensLista = (b.desvantagens || []).map(d => `
+                <li class="flex items-start gap-1.5 text-slate-600">
+                    <i class="fa-solid fa-xmark text-rose-500 text-[10px] mt-1 shrink-0"></i>
+                    <span>${d}</span>
+                </li>
+            `).join("");
+
+            return `
+                <label class="relative bg-white border-2 border-slate-200 p-5 rounded-2xl card-solid cursor-pointer flex flex-col gap-4 transition-all duration-200 has-[:checked]:border-blue-500 has-[:checked]:ring-2 has-[:checked]:ring-blue-100 group">
+                    <input type="radio" name="banco" value="${b.id}" class="sr-only" onchange="Engine.ajustarRendimentoPorIdade()">
+                    
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 ${b.cor} text-white flex items-center justify-center rounded-xl text-lg shadow-sm">
+                                <i class="fa-solid ${b.icone}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-slate-800 text-sm">${b.nome}</h4>
+                                <p class="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider mt-0.5">${(b.juro * 100).toFixed(1)}% Juro Base</p>
+                            </div>
                         </div>
                     </div>
-                    <button type="button" onclick="UI.mostrarModalBanco('${b.id}', event)" class="text-slate-400 hover:text-blue-500 p-1 rounded-lg transition-colors">
-                        <i class="fa-solid fa-circle-info text-lg"></i>
-                    </button>
-                </div>
-            </label>
-        `).join("");
+
+                    <div class="border-t border-slate-100 pt-3 flex flex-col gap-3 text-[11px] font-medium leading-relaxed">
+                        <div>
+                            <span class="font-black text-emerald-600 uppercase tracking-wider text-[9px] block mb-1">Vantagens:</span>
+                            <ul class="space-y-1">${vantagensLista}</ul>
+                        </div>
+                        <div>
+                            <span class="font-black text-rose-600 uppercase tracking-wider text-[9px] block mb-1">Desvantagens:</span>
+                            <ul class="space-y-1">${desvantagensLista}</ul>
+                        </div>
+                    </div>
+                </label>
+            `;
+        }).join("");
     },
 
     mostrarModalBanco(idBanco, event) {
@@ -246,7 +274,6 @@ const UI = {
         const banco = DB.bancos.find(b => b.id === idBanco);
         if (!banco) return;
 
-        // Caso os teus elementos de modal de banco existam no HTML, preenche-os com segurança
         if(document.getElementById("modal-banco-nome")) document.getElementById("modal-banco-nome").innerText = banco.nome;
         if(document.getElementById("modal-banco-juro")) document.getElementById("modal-banco-juro").innerText = `${(banco.juro * 100).toFixed(1)}% TANB`;
         if(document.getElementById("modal-banco-bonus")) document.getElementById("modal-banco-bonus").innerText = `${banco.bonus}€`;
