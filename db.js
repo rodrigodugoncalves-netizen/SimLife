@@ -123,7 +123,7 @@ const DB = {
         { id: "streaming", nome: "Subscrição Streaming", cat: "utilitarios", preco: 10, fel: 20, soc: 10, minIdade: 14, icone: "📺" },
         { id: "rato_gaming", nome: "Rato Gaming RGB", cat: "utilitarios", preco: 35, fel: 25, soc: 0, minIdade: 13, icone: "🖱️" },
         { id: "teclado_mecanico", nome: "Teclado Mecânico Pro", cat: "utilitarios", preco: 75, fel: 35, soc: 0, minIdade: 14, icone: "⌨️" },
-        { id: "tripod_ringlight", nome: "Anel de Luz para Vídeos", cat: "utilitarios", preco: 15, fel: 18, soc: 12, minIdade: 13, icone: "💡" },
+        { id: "tripod_ringlight", nome: "Anel de Luz para Vídeos", cat: "utilitarios", preco: 15, flex: 18, soc: 12, minIdade: 13, icone: "💡" },
         { id: "mochila_antirroubo", nome: "Mochila para Portátil", cat: "utilitarios", preco: 30, fel: 12, soc: 0, minIdade: 14, icone: "🎒" },
         
         // Categoria: Lazer e Saídas
@@ -146,6 +146,11 @@ const DB = {
         { id: "poupador", nome: "Poupador Iniciante", desc: "Alcança 100€ na Conta Poupança.", icon: "🥉" },
         { id: "rico", nome: "Futuro Investidor", desc: "Alcança 500€ na Conta Poupança.", icon: "🥈" },
         { id: "conquistador", nome: "Focado em Metas", desc: "Completa com sucesso o teu primeiro Objetivo Pessoal.", icon: "🥇" },
-        { id: "equilibrio", nome: "Mestre do Equilíbrio", desc: "Fica com 100% de Felicidade e 100% de Vida Social ao mesmo tempo.", icon: "🏆" }
+        { id: "equilibrio", nome: "Mestre do Equilíbrio", desc: "Fica com 100% de Felicidade e 100% de Vida Social ao mesmo tempo.", icon: "🏆" },
+        // 4 Novas Conquistas Adicionadas abaixo:
+        { id: "familia_unida", nome: "Neto Exemplar", desc: "Mantém o contacto regular com os teus avós.", icon: "👵" },
+        { id: "capitalista", nome: "Tubarão Bancário", desc: "Alcança um saldo acumulado superior a 1000€.", icon: "💰" },
+        { id: "consumista", nome: "Rei do Shopping", desc: "Compra mais de 5 produtos diferentes na Loja.", icon: "🛍️" },
+        { id: "independente", nome: "Maior de Idade", desc: "Avança com sucesso na simulação até aos 18 anos.", icon: "🔑" }
     ]
 };

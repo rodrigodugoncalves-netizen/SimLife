@@ -75,6 +75,12 @@ const Engine = {
             
             UI.flutuarTexto(e, `-${precoFinal.toFixed(1)}€`, "text-red-500");
             UI.notificar("Loja", `Compraste ${item.nome}! 😊+${item.fel || 0} 👥+${item.soc || 0}`);
+            
+            // Lógica interna para rastrear troféu de compras
+            if(!State.historicoObj.includes(itemId)) {
+                State.totalChamadasFamilia += 1; // Usado temporariamente para contar compras
+            }
+
             UI.atualizarTudo();
             this.verificarTrofeus();
         } else {
@@ -130,10 +136,11 @@ const Engine = {
         if (!State.bancoDados) { UI.notificar("Erro", "Inicia o jogo primeiro!"); return; }
         
         const mesesPassados = State.mes - State.ultimoMesFamilia;
-        if (mesesPassados < 2) {
-            const mesesEmFalta = 2 - mesesPassados;
-            UI.notificar("Família", `Falta ${mesesEmFalta} ${mesesEmFalta === 1 ? 'mês' : 'meses'} para poderes voltar a ligar à família!`);
-            return;
+        // BLOQUEIO TOTAL E AUMENTADO: Alterado de 2 para 5 meses
+        if (mesesPassados < 5) {
+            const mesesEmFalta = 5 - mesesPassados;
+            UI.notificar("Família", `Acesso Bloqueado! Faltam ${mesesEmFalta} ${mesesEmFalta === 1 ? 'mês' : 'meses'} para poderes voltar a ligar à família!`);
+            return; // Bloqueia mesmo a execução aqui
         }
 
         State.ultimoMesFamilia = State.mes;
@@ -151,7 +158,10 @@ const Engine = {
             UI.flutuarTexto(e, "+Social", "text-purple-500");
             UI.notificar("Família", "Conversa muito agradável! Ganhaste Vida Social.");
         }
+
+        this.desbloquearTrofeu("txt_ligar_av0"); // Auxiliar para disparar a conquista de ligação
         UI.atualizarTudo();
+        this.verificarTrofeus();
     },
 
     terminarMes() {
@@ -164,8 +174,13 @@ const Engine = {
         
         State.felicidade -= 12;
         State.social -= 15;
-        this.limitarStatus();
 
+        // Atualização da Idade simulada com base nos meses para a nova conquista
+        if (State.mes % 12 === 0 && State.idade < 18) {
+            State.idade += 1;
+        }
+
+        this.limitarStatus();
         UI.atualizarTudo();
         
         if (State.mes > 60) {
@@ -179,7 +194,7 @@ const Engine = {
             
             if (sorteado.tipo === 'imprevisto' && State.seguroAtivo) {
                 State.seguroAtivo = false; 
-                UI.notificar("Seguro Ativado", "O Millennium GO cobriu o teu imprevisto de forma gratuita!");
+                UI.notificar("Seguro Ativado", "O Millennium GO cobreu o teu imprevisto de forma gratuita!");
                 return;
             }
             
@@ -209,9 +224,9 @@ const Engine = {
 
     desbloquearTrofeu(id) {
         if (!State.trofeus.includes(id)) {
-            State.trofeus.push(id);
             const trofeu = DB.trofeus.find(t => t.id === id);
             if (trofeu) {
+                State.trofeus.push(id);
                 UI.notificar("🏆 Novo Troféu!", `${trofeu.icon} ${trofeu.nome}`);
                 UI.renderTrofeus();
             }
@@ -251,10 +266,17 @@ const Engine = {
     },
     
     verificarTrofeus() {
+        // Troféus Originais
         if (State.poupanca >= 100 && !State.trofeus.includes("poupador")) this.desbloquearTrofeu("poupador");
         if (State.poupanca >= 500 && !State.trofeus.includes("rico")) this.desbloquearTrofeu("rico");
         if (State.historicoObj.length >= 1 && !State.trofeus.includes("conquistador")) this.desbloquearTrofeu("conquistador");
         if (State.felicidade === 100 && State.social === 100 && !State.trofeus.includes("equilibrio")) this.desbloquearTrofeu("equilibrio");
+        
+        // Verificação dos 4 Novos Troféus
+        if (State.trofeus.includes("txt_ligar_av0") && !State.trofeus.includes("familia_unida")) this.desbloquearTrofeu("familia_unida");
+        if ((State.poupanca + State.bolso) >= 1000 && !State.trofeus.includes("capitalista")) this.desbloquearTrofeu("capitalista");
+        if (State.totalChamadasFamilia >= 5 && !State.trofeus.includes("consumista")) this.desbloquearTrofeu("consumista");
+        if (State.idade >= 18 && !State.trofeus.includes("independente")) this.desbloquearTrofeu("independente");
     },
 
     terminarJogoFinal() {
