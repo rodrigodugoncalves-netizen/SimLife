@@ -83,11 +83,11 @@ const DB = {
     ],
     loja: [
         { id: "lanche", nome: "Lanche c/ Amigos", cat: "comida", preco: 5, fel: 15, soc: 10, icone: "🍔" },
-        { id: "cinema", nome: "Ida ao Cinema", cat: "saidas", preco: 10, fel: 20, soc: 15, minIdade: 12, icone: "🍿" },
-        { id: "jantar", nome: "Jantar de Grupo", cat: "saidas", preco: 20, fel: 25, soc: 30, minIdade: 14, icone: "🍕" },
-        { id: "ginasio", nome: "Mensalidade Ginásio", cat: "desporto", preco: 30, fel: 15, soc: 10, minIdade: 15, icone: "🏋️" },
-        { id: "sapatilhas", nome: "Sapatilhas Marca", cat: "moda", preco: 80, fel: 40, soc: 15, minIdade: 14, icone: "👟" },
-        { id: "festival", nome: "Passe Festival Verão", cat: "saidas", preco: 120, fel: 50, soc: 40, minIdade: 16, icone: "🎪" }
+        { id: "cinema", nome: "Ida ao Cinema", cat: "lazer", preco: 10, fel: 20, soc: 15, minIdade: 12, icone: "🍿" },
+        { id: "jantar", nome: "Jantar de Grupo", cat: "lazer", preco: 20, fel: 25, soc: 30, minIdade: 14, icone: "🍕" },
+        { id: "ginasio", nome: "Mensalidade Ginásio", cat: "saude", preco: 30, fel: 15, soc: 10, minIdade: 15, icone: "🏋️" },
+        { id: "sapatilhas", nome: "Sapatilhas Marca", cat: "utilitarios", preco: 80, fel: 40, soc: 15, minIdade: 14, icone: "👟" },
+        { id: "festival", nome: "Passe Festival Verão", cat: "lazer", preco: 120, fel: 50, soc: 40, minIdade: 16, icone: "🎪" }
     ],
     dilemas: [
         { tipo: "escolha", titulo: "Convite para Sair", desc: "Os teus amigos vão todos ao Shopping. Vais gastar 15€ mas ganhas muita vida social.", acoes: [{ txt: "Ir com eles (-15€)", custo: -15, fel: 10, soc: 25 }, { txt: "Ficar em casa", custo: 0, fel: -10, soc: -15 }] },

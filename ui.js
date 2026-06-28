@@ -29,7 +29,6 @@ const UI = {
         document.getElementById("ui-mes").innerText = `Mês ${State.mes}`;
         document.getElementById("ui-bolso").innerText = `${State.bolso.toFixed(2)}€`;
         document.getElementById("ui-poupanca").innerText = `${State.poupanca.toFixed(2)}€`;
-        document.getElementById("ui-receita").innerText = `${State.receita}€`;
         
         document.getElementById("ui-felicidade").innerText = `${State.felicidade}%`;
         document.getElementById("bar-felicidade").style.width = `${State.felicidade}%`;
@@ -64,52 +63,49 @@ const UI = {
                 </label>
 
                 <div class="mt-3 z-10">
-                    <button type="button" onclick="UI.toggleVantagens('${b.id}')" class="text-xs font-black text-blue-600 hover:text-blue-500 flex items-center gap-1 focus:outline-none bg-blue-50 px-3 py-1.5 rounded-lg w-full justify-center border border-blue-200">
-                        <i id="banco-seta-${b.id}" class="fa-solid fa-chevron-down transition-transform"></i> Ver Vantagens e Detalhes
+                    <button type="button" onclick="UI.mostrarModalBanco('${b.id}')" class="text-xs font-black text-blue-600 hover:text-blue-500 flex items-center gap-1 focus:outline-none bg-blue-50 px-3 py-2 rounded-xl w-full justify-center border border-blue-200 shadow-sm transition-all">
+                        <i class="fa-solid fa-circle-info"></i> Ver Detalhes e Vantagens
                     </button>
-                </div>
-
-                <div id="banco-detalhes-${b.id}" class="hidden mt-4 pt-3 border-t-2 border-dashed border-slate-200 space-y-3 z-10">
-                    <div>
-                        <h5 class="text-[10px] font-black text-emerald-600 uppercase tracking-wider mb-1"><i class="fa-solid fa-circle-check"></i> Vantagens:</h5>
-                        <ul class="text-xs text-slate-600 font-bold space-y-1 list-disc pl-4">
-                            ${b.vantagens ? b.vantagens.map(v => `<li>${v}</li>`).join('') : '<li>Vantagens gerais de conta digital.</li>'}
-                        </ul>
-                    </div>
-                    <div>
-                        <h5 class="text-[10px] font-black text-red-500 uppercase tracking-wider mb-1"><i class="fa-solid fa-circle-xmark"></i> Desvantagens:</h5>
-                        <ul class="text-xs text-slate-600 font-bold space-y-1 list-disc pl-4">
-                            ${b.desvantagens ? b.desvantagens.map(d => `<li>${d}</li>`).join('') : '<li>Rentabilidade sujeita às taxas de mercado.</li>'}
-                        </ul>
-                    </div>
                 </div>
             </div>
         `).join('');
         document.getElementById("bancos-container").innerHTML = html;
     },
 
-    toggleVantagens(bancoId) {
-        const painel = document.getElementById(`banco-detalhes-${bancoId}`);
-        const seta = document.getElementById(`banco-seta-${bancoId}`);
+    // FUNÇÕES DO NOVO CARTÃO CENTRAL DO BANCO
+    mostrarModalBanco(bancoId) {
+        const b = DB.bancos.find(item => item.id === bancoId);
+        if (!b) return;
+
+        document.getElementById("modal-banco-nome").innerText = b.nome;
+        document.getElementById("modal-banco-cartao").innerText = b.cartao || "Conta Digital";
         
-        if (painel.classList.contains('hidden')) {
-            painel.classList.remove('hidden');
-            seta.classList.add('rotate-180');
-        } else {
-            painel.classList.add('hidden');
-            seta.classList.remove('rotate-180');
-        }
+        // Icone e cores
+        const iconeEl = document.getElementById("modal-banco-icone");
+        iconeEl.className = `fa-solid ${b.icone}`;
+        const containerCor = document.getElementById("modal-banco-cor");
+        containerCor.className = `${b.cor} text-white w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm`;
+
+        // Vantagens e desvantagens
+        document.getElementById("modal-banco-vantagens").innerHTML = b.vantagens.map(v => `<li>${v}</li>`).join('');
+        document.getElementById("modal-banco-desvantagens").innerHTML = b.desvantagens.map(d => `<li>${d}</li>`).join('');
+
+        document.getElementById("modal-banco-detalhes").classList.remove('hidden');
+    },
+
+    esconderModalBanco() {
+        document.getElementById("modal-banco-detalhes").classList.add('hidden');
     },
 
     renderFiltros() {
-        const categorias = { "todos": "Todos", "comida": "Comida", "desporto": "Desporto", "moda": "Moda", "saidas": "Saídas" };
+        const categorias = { "todos": "Todos", "utilitarios": "Utilitários", "comida": "Comida", "saude": "Saúde", "lazer": "Lazer" };
         let html = "";
         for (let key in categorias) {
             const ativo = State.categoriaAtual === key;
             html += `
                 <button onclick="UI.filtrarLoja('${key}')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border-2 ${
                     ativo 
-                    ? 'bg-amber-500 text-white border-amber-600 shadow-md' 
+                    ? 'bg-blue-600 text-white border-blue-700 shadow-md' 
                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
                 }">
                     ${categorias[key]}
@@ -170,7 +166,7 @@ const UI = {
         if (State.objetivosAtivos.length === 0) {
             document.getElementById("objetivos-container").innerHTML = `
                 <div class="text-center py-8 border-4 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                    <p class="text-slate-400 font-extrabold text-xs">Não tens nenhum objective definido.</p>
+                    <p class="text-slate-400 font-extrabold text-xs">Não tens nenhum objetivo definido.</p>
                 </div>
             `;
             return;
