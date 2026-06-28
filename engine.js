@@ -57,7 +57,7 @@ const Engine = {
     },
 
     comprarItem(e, itemId) {
-        const item = DB.loja.find(l => l.id === itemId);
+        const item = DB.produtos.find(l => l.id === itemId);
         if (!item) return;
 
         let precoFinal = item.preco;
@@ -222,23 +222,24 @@ const Engine = {
         
         if (idade < 15) { 
             rec.max = 200; 
-            rec.setAttribute('max', '200'); // <--- Força o HTML a redesenhar a barra
+            rec.setAttribute('max', '200'); 
             label.innerText = "Mesada comum para esta idade."; 
         }
         else if (idade < 17) { 
             rec.max = 300; 
-            rec.setAttribute('max', '300'); // <--- Força o HTML a redesenhar a barra
+            rec.setAttribute('max', '300'); 
             label.innerText = "Mesada + Pequenos favores."; 
         }
         else { 
             rec.max = 400; 
-            rec.setAttribute('max', '400'); // <--- Força o HTML a redesenhar a barra
+            rec.setAttribute('max', '400'); 
             label.innerText = "Podes ter um Part-time leve."; 
         }
         
         if (parseInt(rec.value) > rec.max) rec.value = rec.max;
         document.getElementById("valor-rendimento").innerText = rec.value;
     },
+    
     verificarTrofeus() {
         if (State.poupanca >= 100 && !State.trofeus.includes("poupador")) this.desbloquearTrofeu("poupador");
         if (State.poupanca >= 500 && !State.trofeus.includes("rico")) this.desbloquearTrofeu("rico");

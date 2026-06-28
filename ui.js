@@ -24,36 +24,47 @@ const UI = {
     },
 
     atualizarTudo() {
-        // Elementos Básicos do Jogador
         if (document.getElementById("ui-jogador-nome")) {
             document.getElementById("ui-jogador-nome").innerText = State.nome || "Jogador";
         }
         if (document.getElementById("ui-jogador-idade")) {
             document.getElementById("ui-jogador-idade").innerText = `${State.idade} Anos`;
         }
-        if (document.getElementById("ui-mes")) {
-            document.getElementById("ui-mes").innerText = `Mês ${State.mes}`;
+        if (document.getElementById("ui-mes-atual")) {
+            document.getElementById("ui-mes-atual").innerText = `Mês ${State.mes}`;
         }
-
-        // Saldos e Rendimentos
-        if (document.getElementById("ui-bolso")) {
-            document.getElementById("ui-bolso").innerText = `${State.bolso.toFixed(2)}€`;
+        if (document.getElementById("ui-saldo")) {
+            document.getElementById("ui-saldo").innerText = `${State.bolso.toFixed(2)} €`;
+        }
+        if (document.getElementById("ui-bolso-header")) {
+            document.getElementById("ui-bolso-header").innerText = `${State.bolso.toFixed(2)}€`;
         }
         if (document.getElementById("ui-poupanca")) {
-            document.getElementById("ui-poupanca").innerText = `${State.poupanca.toFixed(2)}€`;
+            document.getElementById("ui-poupanca").innerText = `${State.poupanca.toFixed(2)} €`;
         }
-        if (document.getElementById("ui-rendimento")) {
-            document.getElementById("ui-rendimento").innerText = `${State.receita.toFixed(2)}€/mês`;
+        if (document.getElementById("ui-poupanca-header")) {
+            document.getElementById("ui-poupanca-header").innerText = `${State.poupanca.toFixed(2)}€`;
+        }
+        if (document.getElementById("ui-rodape-receita")) {
+            document.getElementById("ui-rodape-receita").innerText = `+${State.receita}€`;
         }
 
-        // Barras de Estado (Felicidade e Social)
-        this.atualizarBarraProgresso("barra-felicidade", "txt-felicidade", State.felicidade);
-        this.atualizarBarraProgresso("barra-social", "txt-social", State.social);
+        this.atualizarBarraProgresso("ui-felicidade-barra", "ui-felicidade-texto", State.felicidade);
+        this.atualizarBarraProgresso("ui-social-barra", "ui-social-texto", State.social);
 
-        // Atualizar as abas se estiverem visíveis
-        const abaObjetivos = document.getElementById("aba-objetivos");
-        if (abaObjetivos && !abaObjetivos.classList.contains("hidden")) {
-            this.renderObjetivos();
+        if (State.bancoDados) {
+            if (document.getElementById("ui-taxa-juro")) {
+                document.getElementById("ui-taxa-juro").innerText = `${(State.bancoDados.juro * 100).toFixed(1)}%`;
+            }
+            if (document.getElementById("ui-previsao-juros")) {
+                document.getElementById("ui-previsao-juros").innerText = (State.poupanca * State.bancoDados.juro).toFixed(2);
+            }
+        }
+
+        const bannerSocial = document.getElementById("alerta-social-banner");
+        if (bannerSocial) {
+            if (State.social < 20) bannerSocial.classList.remove("hidden");
+            else bannerSocial.classList.add("hidden");
         }
     },
 
@@ -70,6 +81,7 @@ const UI = {
 
         const categorias = [
             { id: "todos", nome: "Todos", icone: "fa-th-large" },
+            { id: "alimentacao", nome: "Alimentação", icone: "fa-utensils" },
             { id: "utilitarios", nome: "Utilitários", icone: "fa-wrench" },
             { id: "saude", nome: "Saúde & Desporto", icone: "fa-heartbeat" },
             { id: "lazer", nome: "Lazer & Saídas", icone: "fa-gamepad" }
@@ -82,19 +94,19 @@ const UI = {
                 : "bg-white text-slate-600 border-2 border-slate-200 font-bold hover:bg-slate-50";
 
             return `
-                <button onclick=\"State.categoriaAtual = '${cat.id}'; UI.renderFiltros(); UI.renderLoja();\" 
-                        class=\"px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all duration-700 ${classeBtn}\">
-                    <i class=\"fa-solid ${cat.icone}\"></i> ${cat.nome}
+                <button onclick="State.categoriaAtual = '${cat.id}'; UI.renderFiltros(); UI.renderLoja();" 
+                        class="px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all duration-700 ${classeBtn}">
+                    <i class="fa-solid ${cat.icone}"></i> ${cat.nome}
                 </button>
             `;
         }).join("");
     },
 
     renderLoja() {
-        const container = document.getElementById("loja-itens");
+        const container = document.getElementById("loja-produtos");
         if (!container) return;
 
-        let itens = DB.loja || [];
+        let itens = DB.produtos || [];
         if (State.categoriaAtual !== "todos") {
             itens = itens.filter(item => item.cat === State.categoriaAtual);
         }
@@ -125,12 +137,12 @@ const UI = {
                     </div>
                     <div class="mt-4">
                         <h4 class="font-black text-slate-800 text-sm">${item.nome}</h4>
-                        <div class="flex gap-2 mt-2">
-                            ${item.fel > 0 ? `<span class="text-[10px] bg-emerald-50 text-emerald-700 font-black px-2 py-0.5 rounded-md">😊 +${item.fel} Felicidade</span>` : ""}
-                            ${item.soc > 0 ? `<span class="text-[10px] bg-purple-50 text-purple-700 font-black px-2 py-0.5 rounded-md">👥 +${item.soc} Social</span>` : ""}
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            ${item.fel > 0 ? `<span class="text-[10px] bg-emerald-50 text-emerald-700 font-black px-2 py-0.5 rounded-md">😊 +${item.fel} Fel</span>` : ""}
+                            ${item.soc > 0 ? `<span class="text-[10px] bg-purple-50 text-purple-700 font-black px-2 py-0.5 rounded-md">👥 +${item.soc} Soc</span>` : ""}
                         </div>
                     </div>
-                    <button onclick="Engine.comprarItem('${item.id}', event)" 
+                    <button onclick="Engine.comprarItem(event, '${item.id}')" 
                             class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-white font-black py-2.5 rounded-xl btn-solid text-xs uppercase tracking-wider border-b-4 border-slate-950">
                         Comprar
                     </button>
@@ -160,7 +172,7 @@ const UI = {
                                 <p class="text-xs text-slate-400 font-bold">Meta: <span class="text-slate-700 font-black">${obj.preco}€</span></p>
                             </div>
                         </div>
-                        <button onclick="Engine.alcancarObjetivo(${obj.id})" 
+                        <button onclick="Engine.comprarObjetivo(${obj.id})" 
                                 ${State.poupanca < obj.preco ? "disabled" : ""} 
                                 class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black px-4 py-2.5 rounded-xl btn-solid border-b-4 border-emerald-800 disabled:opacity-40 disabled:pointer-events-none uppercase tracking-wider">
                             Alcançar
@@ -184,18 +196,11 @@ const UI = {
         const container = document.getElementById("lista-trofeus");
         if (!container) return;
 
-        const todosTrofeus = [
-            { id: "poupador", nome: "Poupador Iniciante", desc: "Alcança 100€ na Conta Poupança.", icone: "🥉" },
-            { id: "rico", nome: "Futuro Investidor", desc: "Alcança 500€ na Conta Poupança.", icone: "🥈" },
-            { id: "conquistador", nome: "Focado em Metas", desc: "Completa com sucesso o teu primeiro Objetivo Pessoal.", icone: "🥇" },
-            { id: "equilibrio", nome: "Mestre do Equilíbrio", desc: "Fica com 100% de Felicidade e 100% de Vida Social ao mesmo tempo.", icone: "🏆" }
-        ];
-
-        container.innerHTML = todosTrofeus.map(trf => {
+        container.innerHTML = DB.trofeus.map(trf => {
             const desbloqueado = State.trofeus.includes(trf.id);
             return `
                 <div class="border-2 rounded-2xl p-4 flex items-center gap-4 transition-all duration-300 ${desbloqueado ? 'bg-white border-slate-100 card-solid' : 'bg-slate-50/50 border-dashed border-slate-200 opacity-50'}">
-                    <span class="text-4xl filter ${desbloqueado ? '' : 'grayscale'}">${trf.icone}</span>
+                    <span class="text-4xl filter ${desbloqueado ? '' : 'grayscale'}">${trf.icon}</span>
                     <div>
                         <h4 class="font-black text-sm ${desbloqueado ? 'text-slate-800' : 'text-slate-400'}">${trf.nome}</h4>
                         <p class="text-xs text-slate-400 font-bold mt-0.5">${trf.desc}</p>
@@ -241,23 +246,26 @@ const UI = {
         const banco = DB.bancos.find(b => b.id === idBanco);
         if (!banco) return;
 
-        document.getElementById("modal-banco-nome").innerText = banco.nome;
-        document.getElementById("modal-banco-juro").innerText = `${(banco.juro * 100).toFixed(1)}% TANB`;
-        document.getElementById("modal-banco-bonus").innerText = `${banco.bonus}€`;
-        document.getElementById("modal-banco-custo").innerText = `${banco.custo}€`;
-        document.getElementById("modal-banco-cartao").innerText = banco.cartao || "Débito Normal";
+        // Caso os teus elementos de modal de banco existam no HTML, preenche-os com segurança
+        if(document.getElementById("modal-banco-nome")) document.getElementById("modal-banco-nome").innerText = banco.nome;
+        if(document.getElementById("modal-banco-juro")) document.getElementById("modal-banco-juro").innerText = `${(banco.juro * 100).toFixed(1)}% TANB`;
+        if(document.getElementById("modal-banco-bonus")) document.getElementById("modal-banco-bonus").innerText = `${banco.bonus}€`;
+        if(document.getElementById("modal-banco-custo")) document.getElementById("modal-banco-custo").innerText = `${banco.custo}€`;
+        if(document.getElementById("modal-banco-cartao")) document.getElementById("modal-banco-cartao").innerText = banco.cartao || "Débito Normal";
 
         const ulVantagens = document.getElementById("modal-banco-vantagens");
         const ulDesvantagens = document.getElementById("modal-banco-desvantagens");
 
-        ulVantagens.innerHTML = (banco.vantagens || []).map(v => `<li>${v}</li>`).join("");
-        ulDesvantagens.innerHTML = (banco.desdesvantagens || banco.desvantagens || []).map(d => `<li>${d}</li>`).join("");
+        if (ulVantagens) ulVantagens.innerHTML = (banco.vantagens || []).map(v => `<li>${v}</li>`).join("");
+        if (ulDesvantagens) ulDesvantagens.innerHTML = (banco.desvantagens || []).map(d => `<li>${d}</li>`).join("");
 
-        document.getElementById("modal-banco").classList.remove("hidden");
+        const modal = document.getElementById("modal-banco");
+        if(modal) modal.classList.remove("hidden");
     },
 
     esconderModalBanco() {
-        document.getElementById("modal-banco").classList.add("hidden");
+        const modal = document.getElementById("modal-banco");
+        if(modal) modal.classList.add("hidden");
     },
 
     mostrarModalObjetivo() { 
@@ -266,6 +274,25 @@ const UI = {
     
     esconderModalObjetivo() { 
         document.getElementById("modal-objetivo").classList.add("hidden"); 
+    },
+
+    mostrarEvento(dilema) {
+        document.getElementById("evento-titulo").innerText = dilema.titulo;
+        document.getElementById("evento-desc").innerText = dilema.desc;
+        
+        const containerAcoes = document.getElementById("evento-acoes");
+        containerAcoes.innerHTML = dilema.acoes.map(acao => `
+            <button onclick="Engine.processarAcaoEvento(${acao.custo}, ${acao.fel || 0}, ${acao.soc || 0})" 
+                    class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 px-4 rounded-xl text-sm border-2 border-slate-300 transition-colors">
+                ${acao.txt}
+            </button>
+        `).join("");
+        
+        document.getElementById("modal-evento").classList.remove("hidden");
+    },
+
+    esconderEvento() {
+        document.getElementById("modal-evento").classList.add("hidden");
     },
 
     notificar(titulo, msg) {
