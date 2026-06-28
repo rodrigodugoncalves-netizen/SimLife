@@ -17,7 +17,10 @@ const UI = {
         
         if (idAba === 'objetivos') this.renderObjetivos();
         if (idAba === 'trofeus') this.renderTrofeus();
-        if (idAba === 'loja') this.renderLoja();
+        if (idAba === 'loja') {
+            this.renderFiltros();
+            this.renderLoja();
+        }
     },
 
     atualizarTudo() {
@@ -69,6 +72,21 @@ const UI = {
         document.getElementById("bancos-container").innerHTML = html;
     },
 
+    renderFiltros() {
+        const filtrosDiv = document.getElementById("loja-filtros");
+        if (!filtrosDiv) return;
+        const categorias = ["todos", "snacks", "digital", "moda", "saidas", "desporto", "extra"];
+        filtrosDiv.innerHTML = categorias.map(cat => {
+            const label = cat === "todos" ? "Todos" : cat.charAt(0).toUpperCase() + cat.slice(1);
+            const active = State.categoriaAtual === cat;
+            return `
+                <button type="button" onclick="State.categoriaAtual='${cat}'; UI.renderLoja();" class="px-4 py-2 rounded-xl text-xs uppercase btn-solid font-bold ${active ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-800 hover:bg-slate-300'}">
+                    ${label}
+                </button>
+            `;
+        }).join('');
+    },
+
     renderLoja() {
         const loja = document.getElementById("loja-produtos");
         if (!loja) return;
@@ -76,6 +94,7 @@ const UI = {
         
         DB.loja.forEach(item => {
             if (State.idade < item.minIdade) return;
+            if (State.categoriaAtual !== 'todos' && item.cat !== State.categoriaAtual) return;
             
             let precoTxt = `${item.preco}€`;
             let clickAction = `Engine.comprarItem(event, '${item.id}')`;
