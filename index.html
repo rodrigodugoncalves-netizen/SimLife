@@ -56,16 +56,39 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-blue-200 selection:text-blue-900">
 
-    <header class="bg-white border-b-4 border-slate-200 py-6">
-    <div class="max-w-6xl mx-auto px-4 flex flex-col items-center justify-center">
-        <!-- BLOCO DO LOGO CONFORME A IMAGEM -->
-        <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                <i class="fa-solid fa-gamepad text-3xl"></i>
+    <header class="bg-white border-b-4 border-slate-200 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <img src="22AAF679-E5A0-43A9-8396-307E9DCF47F4_1_201_a.jpeg" 
+                 alt="Simlife Logo" 
+                 class="w-12 h-12 rounded-xl object-contain shrink-0 shadow-sm border border-slate-100">
+            
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-slate-800 leading-tight uppercase tracking-tight">Simlife</h1>
+                <p class="text-xs uppercase font-extrabold text-blue-500 tracking-wider">O Simulador Financeiro</p>
             </div>
-            <div class="flex flex-col">
-                <h1 class="text-4xl font-black text-slate-800 uppercase tracking-tight">Simlife</h1>
-                <p class="text-sm font-extrabold text-blue-500 uppercase tracking-widest">O Simulador Financeiro</p>
+        </div>
+        
+        <div id="ui-header-stats" class="hidden flex items-center gap-4 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex flex-col items-start gap-0.5 min-w-[80px]">
+                <h3 id="ui-jogador-nome" class="font-black text-sm text-slate-800 leading-none">---</h3>
+                <span id="ui-jogador-idade" class="text-xs font-extrabold text-slate-400 leading-none">---</span>
+            </div>
+
+            <div class="flex items-center gap-2 border-l border-r border-slate-200 px-4">
+                <div class="bg-emerald-50 rounded-xl px-3 py-1.5 text-right border border-emerald-100">
+                    <span class="block text-[9px] font-extrabold text-emerald-500 uppercase tracking-wider leading-none mb-0.5">Na Mão</span>
+                    <span id="ui-bolso-header" class="text-sm font-black text-emerald-600 leading-none">0.00€</span>
+                </div>
+                <div class="bg-blue-50 rounded-xl px-3 py-1.5 text-right border border-blue-100">
+                    <span class="block text-[9px] font-extrabold text-blue-500 uppercase tracking-wider leading-none mb-0.5">No Banco</span>
+                    <span id="ui-poupanca-header" class="text-sm font-black text-blue-600 leading-none">0.00€</span>
+                </div>
+            </div>
+
+            <div class="text-left min-w-[50px]">
+                <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider leading-none mb-0.5">Tempo</span>
+                <span id="ui-mes-atual" class="text-sm font-black text-purple-600 leading-none">Mês 1</span>
             </div>
         </div>
     </div>
