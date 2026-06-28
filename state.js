@@ -10,6 +10,7 @@ const State = {
             bancoId: null,
             bancoDados: null,
             seguroAtivo: false,
+            categoriaAtual: "todos",
             historicoObj: [],
             objetivosAtivos: [],
             trofeus: [],
