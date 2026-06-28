@@ -25,7 +25,7 @@ const Engine = {
         UI.atualizarTudo();
         UI.renderLoja();
         UI.renderTrofeus();
-        UI.notificar("Jogo Iniciado", `Bem-vindo ao teu futuro, ${State.nome}!`);
+        UI.notificar("Simulação Iniciada", `Bem-vindo ao teu futuro financeiro, ${State.nome}!`);
     },
 
     transferirDinheiro(e) {
@@ -41,15 +41,15 @@ const Engine = {
                 State.bolso -= valor;
                 State.poupanca += valor;
                 UI.flutuarTexto(e, `-${valor}€`, "text-red-500");
-                UI.notificar("Banco", "Dinheiro guardado na poupança!");
-            } else { UI.notificar("Erro", "Não tens esse dinheiro no bolso."); }
+                UI.notificar("Banco", "Dinheiro guardado na conta poupança!");
+            } else { UI.notificar("Erro", "Não tens esse dinheiro físico no bolso."); }
         } else {
             if (State.poupanca >= valor) {
                 State.poupanca -= valor;
                 State.bolso += valor;
                 UI.flutuarTexto(e, `+${valor}€`, "text-emerald-500");
-                UI.notificar("Banco", "Dinheiro levantado para o bolso!");
-            } else { UI.notificar("Erro", "Não tens esse valor no banco."); }
+                UI.notificar("Banco", "Dinheiro levantado para o teu bolso!");
+            } else { UI.notificar("Erro", "Não tens esse valor guardado no banco."); }
         }
         
         document.getElementById("banco-valor").value = "";
@@ -60,7 +60,15 @@ const Engine = {
         const item = DB.produtos.find(l => l.id === itemId);
         if (!item) return;
 
+        // Limitação extra por idade salvaguardada na lógica de compra
+        const idadeLimite = item.minIdade || item.minIdagedade;
+        if (State.idade < idadeLimite) {
+            UI.notificar("Bloqueado", "Ainda não tens idade para comprar este item.");
+            return;
+        }
+
         let precoFinal = item.preco;
+        // Mantém lógica de bónus caso adiciones o banco Santander no futuro
         if (State.bancoId === 'santander' && item.cat === 'digital') {
             precoFinal = item.preco * 0.8;
         }
@@ -72,7 +80,7 @@ const Engine = {
             this.limitarStatus();
             
             UI.flutuarTexto(e, `-${precoFinal.toFixed(1)}€`, "text-red-500");
-            UI.notificar("Compra", `Compraste ${item.nome}!`);
+            UI.notificar("Loja", `Compraste ${item.nome}! 😊+${item.fel || 0} 👥+${item.soc || 0}`);
             UI.atualizarTudo();
             this.verificarTrofeus();
         } else {
@@ -117,7 +125,7 @@ const Engine = {
                 confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
             }
             
-            UI.notificar("🎉 VITÓRIA!", `Compraste o teu objetivo: ${obj.nome}!`);
+            UI.notificar("🎉 VITÓRIA!", `Alcançaste a tua meta: ${obj.nome}!`);
             UI.renderObjetivos();
             UI.atualizarTudo();
             this.verificarTrofeus();
@@ -126,6 +134,18 @@ const Engine = {
 
     ligarAosAvos(e) {
         if (!State.bancoDados) { UI.notificar("Erro", "Inicia o jogo primeiro!"); return; }
+        
+        // CÁLCULO DO LIMITE: O mês atual menos o mês da última chamada tem de ser maior ou igual a 2
+        const mesesPassados = State.mes - State.ultimoMesFamilia;
+        
+        if (mesesPassados < 2) {
+            const mesesEmFalta = 2 - mesesPassados;
+            UI.notificar("Família", `Falta ${mesesEmFalta} ${mesesEmFalta === 1 ? 'mês' : 'meses'} para poderes voltar a ligar à família!`);
+            return;
+        }
+
+        // Se passou a validação, atualiza o registo para o mês atual
+        State.ultimoMesFamilia = State.mes;
         
         State.social += 15;
         State.felicidade += 5;
@@ -136,9 +156,10 @@ const Engine = {
             const ganho = prendas[Math.floor(Math.random() * prendas.length)];
             State.bolso += ganho;
             UI.flutuarTexto(e, `+${ganho}€`, "text-emerald-500");
-            UI.notificar("Prenda de Família", `Os teus avós deram-te ${ganho}€ às escondidas!`);
+            UI.notificar("Prenda de Família", `Os teus avós deram-te ${ganho}€ às escondidas! 🪙`);
         } else {
             UI.flutuarTexto(e, "+Social", "text-purple-500");
+            UI.notificar("Família", "Conversa muito agradável! Ganhaste Vida Social.");
         }
         UI.atualizarTudo();
     },
@@ -175,7 +196,7 @@ const Engine = {
             
             setTimeout(() => { UI.mostrarEvento(sorteado); }, 300);
         } else {
-            UI.notificar("Novo Mês", `Mês ${State.mes} começou! Recebeste a tua mesada.`);
+            UI.notificar("Novo Mês", `Avançaste para o Mês ${State.mes}. A tua mesada caiu na carteira!`);
         }
         
         this.verificarTrofeus();
@@ -250,7 +271,7 @@ const Engine = {
     terminarJogoFinal() {
         const mensagem = `🎉 FIM DA SIMULAÇÃO! 🎉\n\nParabéns ${State.nome}!\n\n💰 Poupança Final: ${State.poupanca.toFixed(2)}€\n🎯 Objetivos Alcançados: ${State.historicoObj.length}\n📅 Meses Vividos: ${State.mes}\n🏆 Troféus: ${State.trofeus.length}/${DB.trofeus.length}`;
         
-        UI.notificar("🎉 FIM!", `Terminaste com ${State.poupanca.toFixed(2)}€ e ${State.historicoObj.length} objetivos!`);
+        UI.notificar("🎉 FIM!", `Terminaste com ${State.poupanca.toFixed(2)}€ e ${State.historicoObj.length} metas feitas!`);
         setTimeout(() => {
             if (confirm(mensagem + "\n\nQueres jogar de novo?")) {
                 window.location.reload();
