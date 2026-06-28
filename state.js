@@ -1,0 +1,18 @@
+const State = {
+            nome: "",
+            idade: 15,
+            mes: 1,
+            bolso: 0,
+            poupanca: 0,
+            receita: 0,
+            felicidade: 100,
+            social: 100,
+            bancoId: null,
+            bancoDados: null,
+            seguroAtivo: false,
+            historicoObj: [],
+            objetivosAtivos: [],
+            trofeus: [],
+            mesesSemGastar: 0,
+            jogoTerminado: false
+        };
