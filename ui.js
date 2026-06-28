@@ -95,7 +95,7 @@ const UI = {
 
             return `
                 <button onclick="State.categoriaAtual = '${cat.id}'; UI.renderFiltros(); UI.renderLoja();" 
-                        class="px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all duration-300 ${classeBtn}">
+                        class="px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all duration-200 ${classeBtn}">
                     <i class="fa-solid ${cat.icone}"></i> ${cat.nome}
                 </button>
             `;
@@ -117,15 +117,15 @@ const UI = {
         }
 
         container.innerHTML = itens.map(item => {
-            const limiteIdade = item.minIdade || item.minIdagedade;
-            const isBloqueado = State.idade < limiteIdade;
+            const idadeLimite = item.minIdade || 13;
+            const isBloqueado = State.idade < idadeLimite;
             
             if (isBloqueado) {
                 return `
                     <div class="bg-slate-100 border-2 border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center opacity-60">
                         <span class="text-3xl mb-2">🔒</span>
                         <h4 class="font-black text-slate-700 text-sm">${item.nome}</h4>
-                        <p class="text-[11px] font-extrabold text-red-500 uppercase tracking-wider mt-1">Disponível aos ${limiteIdade} anos</p>
+                        <p class="text-[11px] font-extrabold text-red-500 uppercase tracking-wider mt-1">Disponível aos ${idadeLimite} anos</p>
                     </div>
                 `;
             }
@@ -261,36 +261,6 @@ const UI = {
                 </label>
             `;
         }).join("");
-    },
-
-    mostrarModalBanco(idBanco, event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        
-        const banco = DB.bancos.find(b => b.id === idBanco);
-        if (!banco) return;
-
-        if(document.getElementById("modal-banco-nome")) document.getElementById("modal-banco-nome").innerText = banco.nome;
-        if(document.getElementById("modal-banco-juro")) document.getElementById("modal-banco-juro").innerText = `${(banco.juro * 100).toFixed(1)}% TANB`;
-        if(document.getElementById("modal-banco-bonus")) document.getElementById("modal-banco-bonus").innerText = `${banco.bonus}€`;
-        if(document.getElementById("modal-banco-custo")) document.getElementById("modal-banco-custo").innerText = `${banco.custo}€`;
-        if(document.getElementById("modal-banco-cartao")) document.getElementById("modal-banco-cartao").innerText = banco.cartao || "Débito Normal";
-
-        const ulVantagens = document.getElementById("modal-banco-vantagens");
-        const ulDesvantagens = document.getElementById("modal-banco-desvantagens");
-
-        if (ulVantagens) ulVantagens.innerHTML = (banco.vantagens || []).map(v => `<li>${v}</li>`).join("");
-        if (ulDesvantagens) ulDesvantagens.innerHTML = (banco.desvantagens || []).map(d => `<li>${d}</li>`).join("");
-
-        const modal = document.getElementById("modal-banco");
-        if(modal) modal.classList.remove("hidden");
-    },
-
-    esconderModalBanco() {
-        const modal = document.getElementById("modal-banco");
-        if(modal) modal.classList.add("hidden");
     },
 
     mostrarModalObjetivo() { 

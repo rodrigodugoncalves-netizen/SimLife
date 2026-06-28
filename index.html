@@ -7,7 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght=400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -27,247 +27,294 @@
         }
 
         .card-solid {
-            box-shadow: 0 4px 0px 0px #e2e8f0;
+            box-shadow: 0 8px 0 0 #cbd5e1;
+            border: 3px solid #cbd5e1;
+            transition: all 0.15s ease-in-out;
         }
 
-        @keyframes floatUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-40px); opacity: 0; }
-        }
-        .animate-float {
-            animation: floatUp 0.8s ease-out forwards;
-        }
+        .toast-enter { animation: slideInRight 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; }
+        .toast-exit { animation: fadeOutRight 0.2s ease forwards; }
+        
+        @keyframes slideInRight { 0% { transform: translateX(120%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOutRight { 0% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; transform: translateX(120%); } }
+        
+        @keyframes pop { 0% { transform: scale(0.96); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .animate-pop { animation: pop 0.25s ease-out forwards; }
 
-        @keyframes toastIn {
-            0% { transform: translateX(120%); }
-            100% { transform: translateX(0); }
-        }
-        @keyframes toastOut {
-            0% { transform: translateX(0); opacity: 1; }
-            100% { transform: translateX(120%); opacity: 0; }
-        }
-        .toast-enter { animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .toast-exit { animation: toastOut 0.25s ease-in forwards; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-70px) scale(1.2); } }
+        .animate-float { animation: floatUp 0.8s ease-out forwards; pointer-events: none; }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+<body class="min-h-screen flex flex-col antialiased selection:bg-blue-200 selection:text-blue-900">
 
-    <header id="ui-header-stats" class="hidden sticky top-0 bg-white/90 backdrop-blur border-b-2 border-slate-100 z-40 px-4 py-3">
-        <div class="max-w-4xl mx-auto flex items-center justify-between">
+    <header class="bg-white border-b-4 border-slate-200 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <span class="text-xl font-black text-slate-800 tracking-tight">Simlife</span>
-                <span id="ui-mes-atual" class="bg-slate-900 text-white font-black text-[11px] px-2.5 py-1 rounded-md uppercase tracking-wider">Mês 1</span>
-            </div>
-            <div class="flex gap-4 text-xs font-black">
-                <div class="flex items-center gap-1.5 text-slate-700 bg-slate-50 px-3 py-1.5 rounded-xl border">
-                    <span>👛 Bolso:</span>
-                    <span id="ui-bolso-header" class="text-slate-900 font-extrabold">0.00€</span>
+                <div id="ui-header-logo-bg" class="w-12 h-12 bg-blue-600 text-white rounded-xl border-b-4 border-blue-800 flex items-center justify-center text-2xl transition-all">
+                    <i class="fa-solid fa-gamepad"></i>
                 </div>
-                <div class="flex items-center gap-1.5 text-blue-700 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
-                    <span>🏦 Banco:</span>
-                    <span id="ui-poupanca-header" class="text-blue-900 font-extrabold">0.00€</span>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-slate-800 leading-tight uppercase">Simlife</h1>
+                    <p class="text-xs uppercase font-extrabold text-blue-500">O Simulador Financeiro</p>
+                </div>
+            </div>
+            
+            <!-- INTERFACE INICIAL RESTAURADA E ALINHADA -->
+            <div id="ui-header-stats" class="hidden flex items-center gap-4 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+                <!-- Nome e Idade à Esquerda -->
+                <div class="flex flex-col items-start gap-0.5 min-w-[80px]">
+                    <h3 id="ui-jogador-nome" class="font-black text-sm text-slate-800 leading-none">---</h3>
+                    <span id="ui-jogador-idade" class="text-xs font-extrabold text-slate-400 leading-none">---</span>
+                </div>
+
+                <!-- Saldos Centrais -->
+                <div class="flex items-center gap-2 border-l border-r border-slate-200 px-4">
+                    <div class="bg-emerald-50 rounded-xl px-3 py-1.5 text-right border border-emerald-100">
+                        <span class="block text-[9px] font-extrabold text-emerald-500 uppercase tracking-wider leading-none mb-0.5">Na Mão</span>
+                        <span id="ui-bolso-header" class="text-sm font-black text-emerald-600 leading-none">0.00€</span>
+                    </div>
+                    <div class="bg-blue-50 rounded-xl px-3 py-1.5 text-right border border-blue-100">
+                        <span class="block text-[9px] font-extrabold text-blue-500 uppercase tracking-wider leading-none mb-0.5">No Banco</span>
+                        <span id="ui-poupanca-header" class="text-sm font-black text-blue-600 leading-none">0.00€</span>
+                    </div>
+                </div>
+
+                <!-- Tempo à Direita -->
+                <div class="text-left min-w-[50px]">
+                    <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider leading-none mb-0.5">Tempo</span>
+                    <span id="ui-mes-atual" class="text-sm font-black text-purple-600 leading-none">Mês 1</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6">
+    <main class="flex-grow flex flex-col relative py-6 px-4">
         
-        <section id="screen-setup" class="bg-white border-2 border-slate-200/80 rounded-3xl p-6 md:p-10 card-solid space-y-8">
-            <div class="space-y-2 text-center md:text-left">
-                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Cria o teu Perfil Financeiro</h1>
-                <p class="text-slate-400 font-bold text-sm">Configura os teus dados de entrada para começares o simulador de literacia.</p>
-            </div>
-
-            <form onsubmit="Engine.iniciarJogo(event)" class="space-y-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-500 mb-1.5 uppercase tracking-wider">Nome do Avatar</label>
-                        <input type="text" id="input-nome" required placeholder="Ex: Gonçalo" class="w-full bg-slate-50 border-2 border-slate-200 px-4 py-3 rounded-2xl font-bold outline-none focus:border-blue-500 focus:bg-white transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-500 mb-1.5 uppercase tracking-wider">Idade Inicial</label>
-                        <select id="input-age" id="input-idade" onchange="Engine.ajustarRendimentoPorIdade()" class="w-full bg-slate-50 border-2 border-slate-200 px-4 py-3 rounded-2xl font-bold outline-none focus:border-blue-500 focus:bg-white transition-all">
-                            <option value="14">14 Anos (3º Ciclo)</option>
-                            <option value="15" selected>15 Anos (Ensino Secundário)</option>
-                            <option value="16">16 Anos (Trabalho de Verão)</option>
-                            <option value="17">17 Anos (Preparação Faculdade)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-500 mb-1.5 uppercase tracking-wider">Mesada / Rendimento Base (<span id="valor-rendimento" class="text-blue-600 font-black">50</span>€)</label>
-                        <input type="range" id="input-rendimento" min="20" max="300" value="50" step="5" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer mt-4 accent-blue-600">
-                        <span id="label-rendimento-aviso" class="text-[10px] font-bold text-slate-400 block mt-1">Lógica ajustada à idade escolhida.</span>
-                    </div>
+        <section id="screen-setup" class="w-full max-w-3xl mx-auto animate-pop">
+            <div class="bg-white rounded-[2rem] p-6 md:p-8 card-solid">
+                <div class="text-center mb-6">
+                    <span class="text-4xl mb-2 bg-slate-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center border-2 border-slate-200">🇵🇹</span>
+                    <h2 class="text-3xl font-black text-slate-800 uppercase">Cria o teu Futuro</h2>
+                    <p class="text-slate-500 font-bold text-sm">Gere o teu dinheiro, toma decisões e atinge os teus objetivos!</p>
                 </div>
 
-                <div class="space-y-4">
-                    <label class="block text-xs font-extrabold text-slate-500 uppercase tracking-wider">Escolhe a tua primeira Conta Bancária</label>
-                    <div id="bancos-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form id="form-setup" class="space-y-6" onsubmit="Engine.iniciarJogo(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-extrabold text-slate-500 mb-1.5 uppercase"><i class="fa-solid fa-user mr-1.5 text-blue-500"></i>O teu Nome</label>
+                            <input type="text" id="input-nome" required placeholder="Ex: Diogo" class="w-full bg-slate-50 border-2 border-slate-200 px-4 py-3 rounded-xl font-bold focus:border-blue-500 focus:outline-none">
                         </div>
-                </div>
+                        <div>
+                            <label class="block text-xs font-extrabold text-slate-500 mb-1.5 uppercase"><i class="fa-solid fa-cake-candles mr-1.5 text-orange-500"></i>A tua Idade (13 a 18)</label>
+                            <input type="number" id="input-idade" required min="13" max="18" value="15" class="w-full bg-slate-50 border-2 border-slate-200 px-4 py-3 rounded-xl font-bold focus:border-orange-500 focus:outline-none" oninput="Engine.ajustarRendimentoPorIdade()">
+                        </div>
+                    </div>
 
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl btn-solid text-sm uppercase tracking-wider border-b-4 border-blue-800">
-                    Começar Simulação 🚀
-                </button>
-            </form>
+                    <div class="bg-slate-100 p-4 rounded-xl border-2 border-slate-200">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-extrabold text-slate-500 uppercase"><i class="fa-solid fa-wallet mr-1.5 text-yellow-500"></i><span id="label-rendimento-titulo">Mesada Mensal</span></label>
+                            <span class="text-xl font-black text-slate-800 bg-white border-2 border-slate-200 px-3 py-1 rounded-lg"><span id="valor-rendimento">40</span> €</span>
+                        </div>
+                        <input type="range" id="input-rendimento" min="5" max="400" value="40" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        <p id="label-rendimento-aviso" class="text-xs text-slate-500 mt-2 font-bold">Valor médio recomendado para 15 anos.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-500 mb-2 uppercase"><i class="fa-solid fa-building-columns mr-1.5 text-slate-700"></i>Escolhe o teu Banco</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="bancos-container"></div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-lg py-4 rounded-xl border-b-4 border-blue-800 btn-solid uppercase">
+                        Começar a Simulação <i class="fa-solid fa-play ml-2"></i>
+                    </button>
+                </form>
+            </div>
         </section>
 
-        <section id="screen-game" class="hidden space-y-6">
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white border-2 border-slate-100 p-4 rounded-2xl card-solid flex flex-col justify-between">
-                    <span class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Identidade</span>
-                    <div class="mt-2">
-                        <h3 id="ui-jogador-nome" class="font-black text-slate-800 text-base leading-none">Jogador</h3>
-                        <p id="ui-jogador-idade" class="text-xs text-slate-400 font-bold mt-1">15 Anos</p>
+        <section id="screen-game" class="hidden w-full max-w-6xl mx-auto animate-pop flex-grow flex flex-col">
+            <div class="flex overflow-x-auto hide-scrollbar gap-2 mb-6 pb-2 border-b-2 border-slate-200">
+                <button onclick="UI.mudarAba('geral')" id="tab-geral" class="tab-btn px-5 py-3 bg-blue-600 text-white font-black rounded-xl border-b-4 border-blue-800 btn-solid whitespace-nowrap transition-colors"><i class="fa-solid fa-house mr-2"></i>Visão Geral</button>
+                <button onclick="UI.mudarAba('banco')" id="tab-banco" class="tab-btn px-5 py-3 bg-white text-slate-600 font-black rounded-xl border-2 border-slate-200 hover:bg-slate-50 transition-colors whitespace-nowrap"><i class="fa-solid fa-vault mr-2"></i>Banco</button>
+                <button onclick="UI.mudarAba('loja')" id="tab-loja" class="tab-btn px-5 py-3 bg-white text-slate-600 font-black rounded-xl border-2 border-slate-200 hover:bg-slate-50 transition-colors whitespace-nowrap"><i class="fa-solid fa-bag-shopping mr-2"></i>Loja & Lazer</button>
+                <button onclick="UI.mudarAba('objetivos')" id="tab-objetivos" class="tab-btn px-5 py-3 bg-white text-slate-600 font-black rounded-xl border-2 border-slate-200 hover:bg-slate-50 transition-colors whitespace-nowrap"><i class="fa-solid fa-bullseye mr-2"></i>Objetivos</button>
+                <button onclick="UI.mudarAba('trofeus')" id="tab-trofeus" class="tab-btn px-5 py-3 bg-white text-slate-600 font-black rounded-xl border-2 border-slate-200 hover:bg-slate-50 transition-colors whitespace-nowrap"><i class="fa-solid fa-trophy mr-2"></i>Troféus</button>
+            </div>
+
+            <div class="flex-grow pb-24">
+                <div id="aba-geral" class="aba-conteudo space-y-6">
+                    <div id="alerta-social-banner" class="hidden bg-red-100 border-4 border-red-500 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-red-500 text-white w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold">!</div>
+                            <div>
+                                <h4 class="text-red-800 font-black text-lg leading-tight uppercase">Alerta de Isolamento</h4>
+                                <p class="text-red-600 font-bold text-sm">A tua vida social está crítica! Gasta dinheiro na loja em saídas ou liga à tua família!</p>
+                            </div>
+                        </div>
+                        <button onclick="UI.mudarAba('loja')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold btn-solid border-b-4 border-red-700">Ir para a Loja</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-3xl card-solid">
+                                <h3 class="text-sm font-black text-slate-400 uppercase tracking-wider mb-4">A Tua Carteira</h3>
+                                <div class="bg-blue-50 border-2 border-blue-100 rounded-2xl p-4 mb-4 relative overflow-hidden">
+                                    <span class="text-xs font-black text-blue-500 uppercase block mb-1">Bolso (À Ordem)</span>
+                                    <span id="ui-saldo" class="text-4xl font-black text-blue-700">0.00 €</span>
+                                    <i class="fa-solid fa-wallet absolute -right-2 -bottom-2 text-6xl text-blue-500 opacity-10"></i>
+                                </div>
+                                <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-4 relative overflow-hidden">
+                                    <span class="text-xs font-black text-emerald-500 uppercase block mb-1">Poupanças (Banco)</span>
+                                    <span id="ui-poupanca" class="text-2xl font-black text-emerald-700">0.00 €</span>
+                                    <i class="fa-solid fa-piggy-bank absolute -right-2 -bottom-2 text-5xl text-emerald-500 opacity-10"></i>
+                                </div>
+                            </div>
+                            <div class="bg-white p-6 rounded-3xl card-solid space-y-4">
+                                <h3 class="text-sm font-black text-slate-400 uppercase tracking-wider">Bem-Estar</h3>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-xs font-black text-slate-600 uppercase"><i class="fa-solid fa-face-smile text-yellow-500 mr-1"></i> Felicidade</span>
+                                        <span id="ui-felicidade-texto" class="text-xs font-black text-slate-600">100%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-3 border border-slate-200 overflow-hidden">
+                                        <div id="ui-felicidade-barra" class="bg-yellow-400 h-3 rounded-full transition-all duration-500" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-xs font-black text-slate-600 uppercase"><i class="fa-solid fa-user-group text-purple-500 mr-1"></i> Vida Social</span>
+                                        <span id="ui-social-texto" class="text-xs font-black text-slate-600">100%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-3 border border-slate-200 overflow-hidden">
+                                        <div id="ui-social-barra" class="bg-purple-500 h-3 rounded-full transition-all duration-500" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-white p-6 rounded-3xl card-solid h-full flex flex-col">
+                                <h3 class="text-sm font-black text-slate-400 uppercase tracking-wider mb-4">Ações Rápidas</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
+                                    <button onclick="Engine.ligarAosAvos(event)" class="bg-orange-50 border-2 border-orange-200 rounded-2xl p-5 text-left hover:bg-orange-100 transition-colors btn-solid">
+                                        <i class="fa-solid fa-phone text-3xl text-orange-500 mb-3 block"></i>
+                                        <h4 class="font-black text-orange-800 text-lg">Ligar à Família</h4>
+                                        <p class="text-orange-600 text-xs font-bold mt-1">Ganha afeto (e às vezes notas) da família.</p>
+                                    </button>
+                                    <button onclick="UI.mudarAba('objetivos')" class="bg-red-50 border-2 border-red-200 rounded-2xl p-5 text-left hover:bg-red-100 transition-colors btn-solid">
+                                        <i class="fa-solid fa-bullseye text-3xl text-red-500 mb-3 block"></i>
+                                        <h4 class="font-black text-red-800 text-lg">Ver Objetivos</h4>
+                                        <p class="text-red-600 text-xs font-bold mt-1">Consulta o que queres comprar.</p>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white border-2 border-slate-100 p-4 rounded-2xl card-solid space-y-2">
-                    <div class="flex justify-between items-center text-xs font-extrabold text-slate-400 uppercase tracking-wider">
-                        <span>😊 Felicidade</span>
-                        <span id="ui-felicidade-texto" class="text-slate-700 font-black">100%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-3 border rounded-full overflow-hidden">
-                        <div id="ui-felicidade-barra" class="bg-emerald-500 h-full transition-all duration-300" style="width: 100%"></div>
+                <div id="aba-banco" class="aba-conteudo hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-3xl card-solid">
+                            <h3 class="text-xl font-black text-slate-800 uppercase mb-6 flex items-center"><i class="fa-solid fa-money-right-left text-slate-400 mr-3"></i>Transferências</h3>
+                            <div class="space-y-4">
+                                <div class="bg-slate-50 p-4 rounded-xl border-2 border-slate-200">
+                                    <p class="text-sm font-bold text-slate-500 mb-2">Para onde queres mover dinheiro?</p>
+                                    <select id="banco-direcao" class="w-full bg-white border-2 border-slate-300 rounded-xl p-3 font-bold text-slate-700 outline-none">
+                                        <option value="depositar">Do Bolso 👉 Para a Poupança</option>
+                                        <option value="levantar">Da Poupança 👉 Para o Bolso</option>
+                                    </select>
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-xl border-2 border-slate-200">
+                                    <p class="text-sm font-bold text-slate-500 mb-2">Montante (€)</p>
+                                    <input type="number" id="banco-valor" min="1" step="1" placeholder="Ex: 20" class="w-full bg-white border-2 border-slate-300 rounded-xl p-3 font-bold text-slate-800 text-xl outline-none">
+                                </div>
+                                <button onclick="Engine.transferirDinheiro(event)" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-4 rounded-xl btn-solid border-b-4 border-slate-900 uppercase">
+                                    Confirmar Transferência
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-3xl card-solid flex flex-col">
+                            <h3 class="text-xl font-black text-slate-800 uppercase mb-6 flex items-center"><i class="fa-solid fa-chart-line text-emerald-500 mr-3"></i>O Teu Rendimento</h3>
+                            <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-6 flex-grow flex flex-col justify-center items-center text-center">
+                                <p class="text-emerald-700 font-bold mb-2">O teu banco paga-te juros todos os meses por poupares!</p>
+                                <span class="text-5xl font-black text-emerald-600 my-2" id="ui-taxa-juro">1.0%</span>
+                                <p class="text-emerald-600 font-bold text-sm">Taxa Anual</p>
+                                <div class="mt-6 w-full bg-white p-3 rounded-xl border border-emerald-100">
+                                    <p class="text-slate-500 text-xs font-bold uppercase mb-1">Previsão no fim do mês:</p>
+                                    <p class="text-lg font-black text-slate-800">+ <span id="ui-previsao-juros">0.00</span> €</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white border-2 border-slate-100 p-4 rounded-2xl card-solid space-y-2">
-                    <div class="flex justify-between items-center text-xs font-extrabold text-slate-400 uppercase tracking-wider">
-                        <span>👥 Vida Social</span>
-                        <span id="ui-social-texto" class="text-slate-700 font-black">100%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-3 border rounded-full overflow-hidden">
-                        <div id="ui-social-barra" class="bg-purple-500 h-full transition-all duration-300" style="width: 100%"></div>
-                    </div>
+                <div id="aba-loja" class="aba-conteudo hidden space-y-6">
+                    <div class="flex overflow-x-auto hide-scrollbar gap-2 pb-2" id="loja-filtros"></div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="loja-produtos"></div>
                 </div>
 
-                <div class="bg-slate-900 border-2 border-slate-950 p-4 rounded-2xl shadow-sm text-white flex flex-col justify-between">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Próximo Mês</span>
-                    <button onclick="Engine.terminarMes()" class="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white font-black py-2 rounded-xl text-xs uppercase tracking-wider transition-colors">
-                        Avançar Tempo <i class="fa-solid fa-arrow-right ml-1"></i>
+                <div id="aba-objetivos" class="aba-conteudo hidden space-y-6">
+                    <div class="flex justify-between items-center bg-white p-4 rounded-2xl card-solid">
+                        <div>
+                            <h3 class="font-black text-slate-800 uppercase text-lg">As Tuas Metas</h3>
+                            <p class="text-xs font-bold text-slate-500">Poupa na tua conta bancária para comprar.</p>
+                        </div>
+                        <button onclick="UI.mostrarModalObjetivo()" class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-xl font-bold btn-solid border-b-4 border-blue-300">
+                            + Novo Objetivo
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="lista-objetivos"></div>
+                </div>
+
+                <div id="aba-trofeus" class="aba-conteudo hidden space-y-6">
+                    <div class="bg-white p-6 rounded-3xl card-solid">
+                        <h3 class="text-xl font-black text-slate-800 uppercase mb-4">As Tuas Conquistas</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="lista-trofeus"></div>
+                    </div>
+                    <div class="text-center pt-8">
+                        <button onclick="Engine.terminarJogoFinal()" class="bg-slate-800 hover:bg-slate-700 text-white font-black text-lg py-4 px-8 rounded-xl btn-solid border-b-4 border-slate-900 uppercase">
+                            <i class="fa-solid fa-flag-checkered mr-2"></i> Terminar Simulação
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fixed bottom-0 left-0 w-full bg-slate-900 border-t-4 border-slate-700 p-4 z-40">
+                <div class="max-w-6xl mx-auto flex justify-between items-center">
+                    <div class="text-white hidden sm:block">
+                        <p class="font-bold text-slate-300 text-sm">Receita Fixa: <span id="ui-rodape-receita" class="text-emerald-400 font-black">+40€</span></p>
+                        <p class="text-xs text-slate-400">Dica: Usa a tecla ENTER para avançar rápido.</p>
+                    </div>
+                    <button onclick="Engine.terminarMes()" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-white font-black text-lg py-3 px-8 rounded-xl btn-solid border-b-4 border-emerald-700 uppercase flex items-center justify-center gap-2">
+                        Terminar Mês <i class="fa-solid fa-forward-step"></i>
                     </button>
                 </div>
             </div>
-
-            <div id="alerta-social-banner" class="hidden bg-rose-50 border-2 border-rose-100 rounded-2xl p-4 flex items-center gap-3 text-rose-800 text-xs font-bold animate-pulse">
-                <span class="text-xl">⚠️</span>
-                <div>
-                    <h4 class="font-black text-rose-950">Isolamento Social Recorrente!</h4>
-                    <p class="text-rose-700">Estás a ficar sem amigos. Compra algo na loja ou liga à tua família para compensar.</p>
-                </div>
-            </div>
-
-            <nav class="flex gap-2 border-b-2 border-slate-200/60 pb-1">
-                <button id="tab-banco" onclick="UI.mudarAba('banco')" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-black bg-blue-600 text-white border-b-4 border-blue-800">🏦 Gestão Bancária</button>
-                <button id="tab-loja" onclick="UI.mudarAba('loja')" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-black bg-white text-slate-600 border-2">🛒 Loja & Atividades</button>
-                <button id="tab-objetivos" onclick="UI.mudarAba('objetivos')" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-black bg-white text-slate-600 border-2">🎯 Metas Financeiras</button>
-                <button id="tab-trofeus" onclick="UI.mudarAba('trofeus')" class="tab-btn px-4 py-2.5 rounded-xl text-xs font-black bg-white text-slate-600 border-2">🏆 Conquistas</button>
-            </nav>
-
-            <div class="space-y-6">
-                
-                <div id="aba-banco" class="aba-conteudo grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div class="bg-white border-2 border-slate-100 p-5 rounded-2xl card-solid space-y-4">
-                        <h3 class="font-black text-slate-800 text-sm border-b pb-2 uppercase tracking-wider text-xs text-slate-400">Carteira Física</h3>
-                        <div class="space-y-1">
-                            <span class="text-2xl font-black text-slate-800" id="ui-saldo">0.00 €</span>
-                            <p class="text-[11px] font-bold text-slate-400">Dinheiro físico no teu bolso para compras imediatas.</p>
-                        </div>
-                    </div>
-
-                    <div class="bg-white border-2 border-slate-100 p-5 rounded-2xl card-solid space-y-4">
-                        <h3 class="font-black text-slate-800 text-sm border-b pb-2 uppercase tracking-wider text-xs text-slate-400">Mealheiro / Poupança</h3>
-                        <div class="space-y-1">
-                            <span class="text-2xl font-black text-blue-600" id="ui-poupanca">0.00 €</span>
-                            <p class="text-[11px] font-bold text-slate-400">Gera juros ao fim de cada mês: <span id="ui-taxa-juro" class="font-black text-slate-700">0.0%</span> (+<span id="ui-previsao-juros">0.00</span>€ previstos).</p>
-                        </div>
-                    </div>
-
-                    <div class="bg-white border-2 border-slate-100 p-5 rounded-2xl card-solid space-y-4">
-                        <h3 class="font-black text-slate-800 text-sm border-b pb-2 uppercase tracking-wider text-xs text-slate-400">Transferências</h3>
-                        <div class="space-y-3">
-                            <div class="flex gap-2">
-                                <select id="banco-direcao" class="bg-slate-50 border-2 border-slate-200 px-2.5 py-2 rounded-xl text-xs font-bold outline-none focus:border-blue-500">
-                                    <option value="depositar">Depositar</option>
-                                    <option value="levantar">Levantar</option>
-                                </select>
-                                <input type="number" id="banco-valor" placeholder="Quantia" class="flex-1 min-w-0 bg-slate-50 border-2 border-slate-200 px-3 py-2 rounded-xl text-xs font-bold outline-none focus:border-blue-500">
-                            </div>
-                            <button onclick="Engine.transferirDinheiro(event)" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-black py-2.5 rounded-xl text-xs uppercase tracking-wider border-b-4 border-slate-950">Confirmar Operação</button>
-                        </div>
-                    </div>
-                    
-                    <div class="col-span-full bg-white border-2 border-slate-100 p-4 rounded-2xl card-solid flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div class="flex items-center gap-3">
-                            <span class="text-2xl bg-purple-50 p-2 rounded-xl">👵</span>
-                            <div>
-                                <h4 class="font-black text-slate-800 text-sm">Apoio Familiar Estável</h4>
-                                <p class="text-xs text-slate-400 font-bold">Liga aos teus avós para restabelecer os teus índices sociais. (Máx: 1 vez a cada 3 meses devido à distância).</p>
-                            </div>
-                        </div>
-                        <div class="w-full md:w-auto">
-                            <button id="btn-ligar-familia" onclick="Engine.ligarAosAvos(event)"></button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="aba-loja" class="aba-conteudo hidden space-y-4">
-                    <div id="loja-filtros" class="flex flex-wrap gap-2">
-                        </div>
-                    <div id="loja-produtos" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        </div>
-                </div>
-
-                <div id="aba-objetivos" class="aba-conteudo hidden space-y-4">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3 class="font-black text-slate-800 text-sm">Metas de Consumo</h3>
-                            <p class="text-xs text-slate-400 font-bold">Guarda dinheiro na Poupança para atingir os teus sonhos.</p>
-                        </div>
-                        <button onclick="UI.mostrarModalObjetivo()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-black px-4 py-2.5 rounded-xl btn-solid border-b-4 border-blue-800">New Target +</button>
-                    </div>
-                    <div id="lista-objetivos" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        </div>
-                </div>
-
-                <div id="aba-trofeus" class="aba-conteudo hidden">
-                    <div id="lista-trofeus" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        </div>
-                </div>
-
-            </div>
         </section>
     </main>
-
-    <footer class="bg-white border-t-2 border-slate-100 py-3 text-center text-xs font-bold text-slate-400 px-4">
-        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
-            <span>Simlife PAP — Simulador Prático EFP.</span>
-            <span class="text-slate-500">Mesada Mensal Fixa: <span id="ui-rodape-receita" class="text-emerald-600 font-black">0€</span></span>
-        </div>
-    </footer>
-
-    <div id="modal-evento" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white border-2 border-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-6">
-            <div class="text-center space-y-2">
-                <span class="text-4xl">🔔</span>
-                <h3 id="evento-titulo" class="text-xl font-black text-slate-900 tracking-tight">Evento Imprevisto</h3>
-                <p id="evento-desc" class="text-slate-500 font-bold text-xs leading-relaxed">Descrição do problema ou situação financeira simulada.</p>
+         
+    <div id="modal-evento" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden card-solid transform scale-95 transition-transform duration-200" id="modal-evento-card">
+            <div id="evento-header" class="p-6 text-center text-white bg-slate-800">
+                <span id="evento-icon" class="text-5xl mb-3 block">⚠️</span>
+                <h3 id="evento-titulo" class="text-2xl font-black uppercase tracking-tight">Imprevisto!</h3>
             </div>
-            <div id="evento-acoes" class="space-y-2">
-                </div>
+            <div class="p-6">
+                <p id="evento-desc" class="text-slate-600 font-bold text-center mb-6 text-lg"></p>
+                <div id="evento-acoes" class="space-y-3"></div>
+            </div>
         </div>
     </div>
 
-    <div id="modal-objetivo" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white border-2 border-slate-200 w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
-            <h3 class="text-lg font-black text-slate-900 tracking-tight">Definir Nova Meta</h3>
-            <div class="space-y-3">
+    <div id="modal-objetivo" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-6 card-solid">
+            <h3 class="text-xl font-black text-slate-800 uppercase mb-4">Novo Objetivo</h3>
+            <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-extrabold text-slate-500 mb-1 uppercase">Nome da Meta</label>
-                    <input type="text" id="obj-nome" placeholder="Ex: Computador Gaming" class="w-full bg-slate-50 border-2 border-slate-200 px-4 py-3 rounded-xl font-bold outline-none focus:border-blue-500">
+                    <label class="block text-xs font-extrabold text-slate-500 mb-1 uppercase">O que queres comprar?</label>
+                    <input type="text" id="obj-nome" placeholder="Ex: Ténis Novos" class="w-full bg-slate-50 border-2 border-slate-200 px-4 py-3 rounded-xl font-bold outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <label class="block text-xs font-extrabold text-slate-500 mb-1 uppercase">Preço (€)</label>
@@ -284,13 +331,11 @@
             </div>
         </div>
     </div>
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    <div id="toast-container" class="fixed top-16 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-    <script src="state.js"></script>
     <script src="db.js"></script>
+    <script src="state.js"></script>
     <script src="ui.js"></script>
     <script src="engine.js"></script>
-    <script src="events.js"></script>
 </body>
 </html>
