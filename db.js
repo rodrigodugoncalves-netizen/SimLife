@@ -137,10 +137,26 @@ const DB = {
         { id: "karting", nome: "Corrida de Karting", cat: "lazer", preco: 25, fel: 35, soc: 20, minIdade: 15, icone: "🏎️" },
         { id: "bilhar_arcade", nome: "Fichas de Salão de Jogos", cat: "lazer", preco: 6, fel: 14, soc: 18, minIdade: 13, icone: "🕹️" }
     ],
+    // No teu db.js, substitui a secção 'dilemas' por esta:
     dilemas: [
-        { tipo: "escolha", titulo: "Convite para Sair", desc: "Os teus amigos vão todos ao Shopping. Vais gastar 15€ mas ganhas muita vida social.", acoes: [{ txt: "Ir com eles (-15€)", custo: -15, fel: 10, soc: 25 }, { txt: "Ficar em casa", custo: 0, fel: -10, soc: -15 }] },
-        { tipo: "imprevisto", titulo: "Material Escolar", desc: "Precisas de comprar uma calculadora nova para a escola. É obrigatório.", acoes: [{ txt: "Pagar 25€", custo: -25, fel: 0, soc: 0 }] },
-        { tipo: "sorte", titulo: "Boa Ação", desc: "Ajudaste um vizinho e ele deu-te uma gorjeta!", acoes: [{ txt: "Agradecer (+10€)", custo: 10, fel: 5, soc: 5 }] }
+    // --- ESCOLHAS (Decisões com trade-offs) ---
+    { tipo: "escolha", titulo: "Convite para Sair", desc: "Os teus amigos vão todos ao Shopping. Vais gastar 15€ mas ganhas muita vida social.", acoes: [{ txt: "Ir com eles (-15€)", custo: -15, fel: 10, soc: 25 }, { txt: "Ficar em casa", custo: 0, fel: -10, soc: -15 }] },
+    { tipo: "escolha", titulo: "Upgrade de Equipamento", desc: "Queres comprar um rato gaming novo. Vale o investimento?", acoes: [{ txt: "Comprar (-35€)", custo: -35, fel: 25, soc: 0 }, { txt: "Usar o velho", custo: 0, fel: 0, soc: 0 }] },
+    { tipo: "escolha", titulo: "Projeto Escolar", desc: "Precisas de materiais para um projeto de grupo. Os teus pais não pagam.", acoes: [{ txt: "Comprar materiais (-20€)", custo: -20, fel: 5, soc: 15 }, { txt: "Não participar", custo: 0, fel: -5, soc: -10 }] },
+    { tipo: "escolha", titulo: "Oportunidade de Formação", desc: "Apareceu um curso online de curta duração. Pode ser útil para o futuro.", acoes: [{ txt: "Inscrever (-50€)", custo: -50, fel: 10, soc: 5 }, { txt: "Ignorar", custo: 0, fel: 0, soc: 0 }] },
+    { tipo: "escolha", titulo: "Subscrição Mensal", desc: "Queres manter a tua subscrição de música/streaming?", acoes: [{ txt: "Manter (-10€)", custo: -10, fel: 15, soc: 5 }, { txt: "Cancelar", custo: 0, fel: -10, soc: 0 }] },
+    { tipo: "escolha", titulo: "Almoço na Cantina", desc: "Queres almoçar com os amigos fora ou levar marmita?", acoes: [{ txt: "Comer fora (-8€)", custo: -8, fel: 10, soc: 15 }, { txt: "Levar marmita", custo: 0, fel: -5, soc: 0 }] },
+
+    // --- IMPREVISTOS (Obrigações e Azares) ---
+    { tipo: "imprevisto", titulo: "Material Escolar", desc: "Precisas de comprar uma calculadora nova. É obrigatório.", acoes: [{ txt: "Pagar 25€", custo: -25, fel: 0, soc: 0 }] },
+    { tipo: "imprevisto", titulo: "Telemóvel Partido", desc: "O ecrã partiu-se! Reparação urgente necessária.", acoes: [{ txt: "Pagar 40€", custo: -40, fel: -10, soc: 0 }] },
+    { tipo: "imprevisto", titulo: "Multa de Multibanco", desc: "Esqueceste-te do cartão na máquina e cobram taxa de reposição.", acoes: [{ txt: "Pagar 5€", custo: -5, fel: -5, soc: 0 }] },
+    { tipo: "imprevisto", titulo: "Transporte Avariado", desc: "O autocarro avariou e tiveste de apanhar um TVDE.", acoes: [{ txt: "Pagar 8€", custo: -8, fel: -5, soc: 0 }] },
+    { tipo: "imprevisto", titulo: "Corte de Cabelo", desc: "Precisas de ir ao barbeiro antes de um evento.", acoes: [{ txt: "Pagar 12€", custo: -12, fel: 10, soc: 5 }] },
+    { tipo: "imprevisto", titulo: "Avaria no Portátil", desc: "O computador bloqueou e precisa de assistência técnica.", acoes: [{ txt: "Reparação (-60€)", custo: -60, fel: -15, soc: 0 }] },
+    { tipo: "imprevisto", titulo: "Perda do Passe", desc: "Perdeste o teu cartão de transporte. Tens de pedir segunda via.", acoes: [{ txt: "Pagar 10€", custo: -10, fel: -5, soc: 0 }] },
+    { tipo: "imprevisto", titulo: "Problema Dentário", desc: "Uma dor de dentes repentina obriga a uma ida ao dentista.", acoes: [{ txt: "Consulta (-45€)", custo: -45, fel: -20, soc: 0 }] },
+    { tipo: "imprevisto", titulo: "Multa de Biblioteca", desc: "Entregaste o livro atrasado e acumulaste uma multa.", acoes: [{ txt: "Pagar 7€", custo: -7, fel: -5, soc: 0 }] }
     ],
     trofeus: [
         { id: "poupador", nome: "Poupador Iniciante", desc: "Alcança 100€ na Conta Poupança.", icon: "🥉" },
