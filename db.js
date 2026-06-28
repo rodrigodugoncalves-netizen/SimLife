@@ -1,46 +1,46 @@
 const DB = {
-            bancos: [
-        { 
-            id: "cgd", 
-            nome: "Caixa Jovem", 
-            juro: 0.005, 
-            bonus: 0, 
-            icone: "fa-building-columns", 
-            cor: "bg-blue-600", 
-            desc: "Vantagem: Balcões físicos em todo o país. Desvantagem: Juro baixo (0.5% ao mês) e taxa de ativação de 5€.", 
-            custo: 5 
-        },
-        { 
-            id: "activo", 
-            nome: "Activo Bank", 
-            juro: 0.02, 
-            bonus: 10, 
-            icone: "fa-mobile-screen", 
-            cor: "bg-slate-800", 
-            desc: "Vantagem: Conta e cartão 100% grátis, bónus inicial de 10€ e juro bom (2% ao mês). Desvantagem: Sem balcões físicos perto.", 
-            custo: 0 
-        },
-        { 
-            id: "bcp", 
-            nome: "Millennium GO!", 
-            juro: 0.01, 
-            bonus: 0, 
-            icone: "fa-shield", 
-            cor: "bg-pink-600", 
-            desc: "Vantagem: Oferece seguro de imprevistos grátis. Desvantagem: Juro mediano (1% ao mês) e obriga a usar a App deles.", 
-            custo: 0 
-        },
-        { 
-            id: "santander", 
-            nome: "Santander CHOOSE", 
-            juro: 0.015, 
-            bonus: 0, 
-            icone: "fa-fire", 
-            cor: "bg-red-600", 
-            desc: "Vantagem: 20% de Desconto em todas as compras na categoria 'Digital'. Desvantagem: Cobram 1€/mês após completares 18 anos.", 
-            custo: 0 
-        }
-    ],
+          bancos: [
+    { 
+        id: "cgd", 
+        nome: "Caixa Jovem", 
+        juro: 0.005, 
+        bonus: 0, 
+        icone: "fa-building-columns", 
+        cor: "bg-blue-600", 
+        desc: "✅ Vantagem: Balcões físicos em todo o país e alta segurança.<br>❌ Desvantagem: Juro muito baixo (0.5%/mês) e taxa de ativação de 5€.",
+        custo: 5 
+    },
+    { 
+        id: "activo", 
+        nome: "Activo Bank", 
+        juro: 0.02, 
+        bonus: 10, 
+        icone: "fa-mobile-screen", 
+        cor: "bg-slate-800", 
+        desc: "✅ Vantagem: Conta 100% grátis, bónus de 10€ e juro alto (2%/mês).<br>❌ Desvantagem: Sem balcões físicos e apoio ao cliente demorado.", 
+        custo: 0 
+    },
+    { 
+        id: "bcp", 
+        nome: "Millennium GO!", 
+        juro: 0.01, 
+        bonus: 0, 
+        icone: "fa-shield", 
+        cor: "bg-pink-600", 
+        desc: "✅ Vantagem: Juro mediano (1%/mês) e o primeiro imprevisto do jogo é grátis.<br>❌ Desvantagem: Obriga a usar a App e sem bónus inicial.", 
+        custo: 0 
+    },
+    { 
+        id: "santander", 
+        nome: "Santander Stream", 
+        juro: 0.012, 
+        bonus: 0, 
+        icone: "fa-fire", 
+        cor: "bg-red-600", 
+        desc: "✅ Vantagem: 20% de Desconto em todos os itens da categoria Digital.<br>❌ Desvantagem: Juro baixo (1.2%/mês) se não gastares na loja.", 
+        custo: 0 
+    }
+            ],
             loja: [
                 { id: "livre", nome: "Despesa Livre", cat: "extra", preco: 0, fel: 0, soc: 0, minIdade: 13, icone: "📝" },
                 { id: "gomas", nome: "Pacote de Gomas", cat: "snacks", preco: 2, fel: 5, soc: 0, minIdade: 13, icone: "🍬" },

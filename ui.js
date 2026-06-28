@@ -24,13 +24,17 @@ const UI = {
     },
 
     atualizarTudo() {
-        document.getElementById("ui-jogador-nome").innerText = State.nome;
-        document.getElementById("ui-jogador-idade").innerText = `${State.idade} Anos`;
-        document.getElementById("ui-mes-atual").innerText = State.mes;
-        document.getElementById("ui-rodape-receita").innerText = `+${State.receita}€`;
+    document.getElementById("ui-jogador-nome").innerText = State.nome;
+    document.getElementById("ui-jogador-idade").innerText = `${State.idade} Anos`;
+    document.getElementById("ui-mes-atual").innerText = `Mês ${State.mes}`;
+    
+    // Atualiza os saldos no novo sítio do Cabeçalho (Canto Superior Direito)
+    document.getElementById("ui-bolso-header").innerText = `${State.bolso.toFixed(2)}€`;
+    document.getElementById("ui-poupanca-header").innerText = `${State.poupanca.toFixed(2)}€`;
         
-        document.getElementById("ui-saldo").innerText = `${State.bolso.toFixed(2)} €`;
-        document.getElementById("ui-poupanca").innerText = `${State.poupanca.toFixed(2)} €`;
+        // Mantém a compatibilidade caso uses os IDs antigos nas caixas do banco ou carteira
+        if(document.getElementById("ui-saldo")) document.getElementById("ui-saldo").innerText = `${State.bolso.toFixed(2)} €`;
+        if(document.getElementById("ui-poupanca")) document.getElementById("ui-poupanca").innerText = `${State.poupanca.toFixed(2)} €`;
         
         document.getElementById("ui-felicidade-texto").innerText = `${State.felicidade}%`;
         document.getElementById("ui-felicidade-barra").style.width = `${State.felicidade}%`;

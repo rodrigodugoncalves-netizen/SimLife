@@ -61,29 +61,35 @@
                     <p class="text-xs uppercase font-extrabold text-blue-500">O Simulador Financeiro</p>
                 </div>
             </div>
-            
-            <div id="ui-header-stats" class="hidden flex items-center gap-6 bg-white border-2 border-slate-200 px-5 py-2.5 rounded-2xl shadow-sm">
-            <div class="flex items-center gap-2 border-r-2 border-slate-100 pr-4">
-                <span class="text-base">🪙</span>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase leading-none">Mão</span>
-                    <span id="ui-header-saldo" class="text-sm font-black text-slate-700 leading-tight">0.00 €</span>
+            <div id="ui-header-stats" class="hidden flex items-center gap-6 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+    <!-- Caixa do Tempo (Mês) adicionada para corrigir o erro -->
+                <div class="text-left border-r border-slate-200 pr-4">
+                    <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Tempo</span>
+                    <span id="ui-mes-atual" class="text-sm font-black text-purple-600">Mês 1</span>
                 </div>
-            </div>
-            
-            <div class="flex items-center gap-2 border-r-2 border-slate-100 pr-4">
-                <span class="text-base">🏦</span>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase leading-none">Banco</span>
-                    <span id="ui-header-poupanca" class="text-sm font-black text-slate-700 leading-tight">0.00 €</span>
-                </div>
-            </div>
 
-            <div class="text-right">
-                <h3 id="ui-jogador-nome" class="font-black text-slate-800 leading-tight">Jogador</h3>
-                <span id="ui-jogador-idade" class="text-xs font-bold text-slate-500">15 Anos</span>
+                <div class="flex gap-4 border-r border-slate-200 pr-4">
+                    <div class="text-right">
+                        <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Na Mão</span>
+                        <span id="ui-bolso-header" class="text-sm font-black text-emerald-600">0.00€</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">No Banco</span>
+                        <span id="ui-poupanca-header" class="text-sm font-black text-blue-600">0.00€</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-sm">
+                        <i class="fa-solid fa-user text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 id="ui-jogador-nome" class="font-black text-sm tracking-tight leading-none mb-0.5">---</h3>
+                        <span id="ui-jogador-idade" class="text-xs font-extrabold text-slate-400 leading-none">---</span>
+                    </div>
+                </div>
             </div>
-        </div>
+            
         </div>
     </header>
 
