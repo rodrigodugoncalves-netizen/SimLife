@@ -1,244 +1,186 @@
 const Engine = {
     
+    // Inicia o jogo e valida o setup inicial
     iniciarJogo(e) {
-        e.preventDefault();
-        State.nome = document.getElementById("input-nome").value;
-        State.idade = parseInt(document.getElementById("input-idade").value);
-        State.receita = parseInt(document.getElementById("input-rendimento").value);
+        if (e) e.preventDefault();
+        
+        const nomeInput = document.getElementById("input-nome");
+        const idadeInput = document.getElementById("input-idade");
+        const rendimentoInput = document.getElementById("input-rendimento");
+        
+        if (!nomeInput || !idadeInput || !rendimentoInput) {
+            console.error("Erro: Elementos do DOM de configuração não encontrados.");
+            return;
+        }
+
+        State.nome = nomeInput.value.trim() || "Jogador";
+        State.idade = parseInt(idadeInput.value) || 15;
+        State.receita = parseInt(rendimentoInput.value) || 0;
         
         const bancoSelecionado = document.querySelector('input[name="banco"]:checked');
-        if (!bancoSelecionado) { alert("Escolhe um banco primeiro!"); return; }
+        if (!bancoSelecionado) { 
+            alert("Escolhe um banco primeiro!"); 
+            return; 
+        }
         
         State.bancoId = bancoSelecionado.value;
         State.bancoDados = DB.bancos.find(b => b.id === State.bancoId);
         
-        State.bolso = State.bancoDados.bonus;
-        if (State.bancoDados.custo > 0) State.bolso -= State.bancoDados.custo;
-        if (State.bancoId === 'bcp') State.seguroAtivo = true;
+        if (!State.bancoDados) {
+            alert("Erro ao carregar os dados do banco selecionado.");
+            return;
+        }
+        
+        // Configura saldos iniciais aplicando custos/bónus do banco escolhido
+        State.bolso = State.bancoDados.bonus || 0;
+        if (State.bancoDados.custo > 0) {
+            State.bolso -= State.bancoDados.custo;
+        }
+        
+        // Ativa o seguro especial do Millennium GO!
+        if (State.bancoId === 'bcp') {
+            State.seguroAtivo = true;
+        }
 
+        // Alterna os ecrãs visuais
         document.getElementById('screen-setup').classList.add('hidden');
         document.getElementById('screen-game').classList.remove('hidden');
         document.getElementById('ui-header-stats').classList.remove('hidden');
         
-        State.objetivosAtivos.push({ id: Date.now(), nome: "Telemóvel Novo", preco: 300, icon: "📱" });
+        // Configura o estado inicial da simulação
+        State.objetivosAtivos = [{ id: Date.now(), nome: "Telemóvel Novo", preco: 300, icon: "📱" }];
+        State.historicoObj = [];
+        State.trofeus = [];
+        State.mes = 1;
+        State.poupanca = 0;
+        State.felicidade = 100;
+        State.social = 100;
+        State.mesesSemGastar = 0;
+        State.jogoTerminado = false;
 
+        // Atualiza a interface completa
         UI.atualizarTudo();
         UI.renderLoja();
         UI.renderTrofeus();
         UI.notificar("Jogo Iniciado", `Bem-vindo ao teu futuro, ${State.nome}!`);
     },
 
-    transferirDinheiro(e) {
-        if (!State.bancoDados) { UI.notificar("Erro", "Inicia o jogo primeiro!"); return; }
-        
-        const direcao = document.getElementById("banco-direcao").value;
-        const valor = parseFloat(document.getElementById("banco-valor").value);
-        
-        if (isNaN(valor) || valor <= 0) { UI.notificar("Erro", "Insere um valor válido."); return; }
+    // Move valores entre o bolso e a poupança bancária
+    transferirDinheiro(direcao, valor) {
+        valor = parseFloat(valor);
+        if (isNaN(valor) || valor <= 0) {
+            UI.notificar("Erro", "Insere um valor válido superior a 0€.");
+            return;
+        }
 
-        if (direcao === 'depositar') {
+        if (direcao === 'guardar') {
             if (State.bolso >= valor) {
                 State.bolso -= valor;
                 State.poupanca += valor;
-                UI.flutuarTexto(e, `-${valor}€`, "text-red-500");
-                UI.notificar("Banco", "Dinheiro guardado na poupança!");
-            } else { UI.notificar("Erro", "Não tens esse dinheiro no bolso."); }
-        } else {
+                UI.notificar("Poupança", `Guardaste ${valor.toFixed(2)}€ na tua poupança!`);
+            } else {
+                UI.notificar("Dinheiro Insuficiente", "Não tens essa quantia no teu bolso.");
+            }
+        } else if (direcao === 'retirar') {
             if (State.poupanca >= valor) {
                 State.poupanca -= valor;
                 State.bolso += valor;
-                UI.flutuarTexto(e, `+${valor}€`, "text-emerald-500");
-                UI.notificar("Banco", "Dinheiro levantado para o bolso!");
-            } else { UI.notificar("Erro", "Não tens esse valor no banco."); }
+                UI.notificar("Banco", `Retiraste ${valor.toFixed(2)}€ para o teu bolso.`);
+            } else {
+                UI.notificar("Sem Saldo", "Não tens essa quantia na tua poupança.");
+            }
         }
-        
-        document.getElementById("banco-valor").value = "";
         UI.atualizarTudo();
     },
 
-    comprarItem(e, itemId) {
-        const item = DB.loja.find(l => l.id === itemId);
+    // Processa a aquisição de um item da loja/lazer
+    comprarItem(idItem) {
+        if (State.jogoTerminado) return;
+
+        const item = DB.loja.find(i => i.id === idItem);
         if (!item) return;
 
-        let precoFinal = item.preco;
-        if (State.bancoId === 'santander' && item.cat === 'digital') {
-            precoFinal = item.preco * 0.8;
-        }
-
-        if (State.bolso >= precoFinal) {
-            State.bolso -= precoFinal;
-            State.felicidade += (item.fel || 0);
-            State.social += (item.soc || 0);
-            this.limitarStatus();
-            
-            UI.flutuarTexto(e, `-${precoFinal.toFixed(1)}€`, "text-red-500");
-            UI.notificar("Compra", `Compraste ${item.nome}!`);
-            UI.atualizarTudo();
-            this.verificarTrofeus();
-        } else {
-            UI.notificar("Sem Saldo", "Não tens dinheiro suficiente no bolso! Transfere do Banco.");
-        }
-    },
-
-    adicionarObjetivo() {
-        const nome = document.getElementById("obj-nome").value;
-        const preco = parseFloat(document.getElementById("obj-preco").value);
-        const icon = document.getElementById("obj-icon").value;
-
-        if (!nome || isNaN(preco) || preco <= 0) { UI.notificar("Erro", "Preenche os campos corretamente."); return; }
-
-        State.objetivosAtivos.push({ id: Date.now(), nome, preco, icon });
-        UI.esconderModalObjetivo();
-        
-        document.getElementById("obj-nome").value = "";
-        document.getElementById("obj-preco").value = "";
-        
-        UI.renderObjetivos();
-        UI.notificar("Meta Criada", `Objetivo '${nome}' adicionado!`);
-    },
-
-    removerObjetivo(id) {
-        State.objetivosAtivos = State.objetivosAtivos.filter(o => o.id !== id);
-        UI.renderObjetivos();
-    },
-
-    comprarObjetivo(id) {
-        const obj = State.objetivosAtivos.find(o => o.id === id);
-        if (!obj) return;
-
-        if (State.poupanca >= obj.preco) {
-            State.poupanca -= obj.preco;
-            State.historicoObj.push(obj.nome);
-            State.objetivosAtivos = State.objetivosAtivos.filter(o => o.id !== id);
-            
-            State.felicidade = 100; 
-            
-            if (typeof confetti === 'function') {
-                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-            }
-            
-            UI.notificar("🎉 VITÓRIA!", `Compraste o teu objetivo: ${obj.nome}!`);
-            UI.renderObjetivos();
-            UI.atualizarTudo();
-            this.verificarTrofeus();
-        }
-    },
-
-    ligarAosAvos(e) {
-        if (!State.bancoDados) { UI.notificar("Erro", "Inicia o jogo primeiro!"); return; }
-        
-        State.social += 15;
-        State.felicidade += 5;
-        this.limitarStatus();
-        
-        if (Math.random() < 0.35) {
-            const prendas = [5, 10, 20];
-            const ganho = prendas[Math.floor(Math.random() * prendas.length)];
-            State.bolso += ganho;
-            UI.flutuarTexto(e, `+${ganho}€`, "text-emerald-500");
-            UI.notificar("Prenda de Família", `Os teus avós deram-te ${ganho}€ às escondidas!`);
-        } else {
-            UI.flutuarTexto(e, "+Social", "text-purple-500");
-        }
-        UI.atualizarTudo();
-    },
-
-    terminarMes() {
-        if (!State.bancoDados) { UI.notificar("Erro", "Inicia o jogo primeiro!"); return; }
-        
-        State.mes += 1;
-        
-        let juroGanho = State.poupanca * State.bancoDados.juro;
-        State.poupanca += juroGanho;
-        State.bolso += State.receita;
-        
-        State.felicidade -= 12;
-        State.social -= 15;
-        this.limitarStatus();
-
-        UI.atualizarTudo();
-        
-        if (State.mes > 60) {
-            setTimeout(() => { this.terminarJogoFinal(); }, 300);
+        if (State.idade < item.minIdade) {
+            UI.notificar("Idade Insuficiente", `Precisas de ter pelo menos ${item.minIdade} anos.`);
             return;
         }
-        
-        if (Math.random() < 0.40) {
-            const lista = DB.dilemas;
-            const sorteado = lista[Math.floor(Math.random() * lista.length)];
-            
-            if (sorteado.tipo === 'imprevisto' && State.seguroAtivo) {
-                State.seguroAtivo = false; 
-                UI.notificar("Seguro Ativado", "O Millennium GO cobriu o teu imprevisto de forma gratuita!");
-                return;
-            }
-            
-            setTimeout(() => { UI.mostrarEvento(sorteado); }, 300);
-        } else {
-            UI.notificar("Novo Mês", `Mês ${State.mes} começou! Recebeste a tua mesada.`);
-        }
-        
-        this.verificarTrofeus();
-    },
 
-    processarAcaoEvento(custo, fel, soc) {
-        if (custo < 0 && State.bolso < Math.abs(custo)) {
-            UI.notificar("Insolvente", "Não tens dinheiro suficiente no bolso! Ficas de castigo (-Felicidade).");
-            State.felicidade -= 25;
-        } else {
-            State.bolso += custo;
-            State.felicidade += (fel || 0);
-            State.social += (soc || 0);
+        if (State.bolso < item.preco) {
+            UI.notificar("Sem Dinheiro", `Não tens dinheiro suficiente no bolso (${item.preco}€).`);
+            return;
         }
-        
-        this.limitarStatus();
-        UI.esconderEvento(); 
+
+        State.bolso -= item.preco;
+        State.felicidade = Math.min(100, State.felicidade + item.fel);
+        State.social = Math.min(100, State.social + item.soc);
+
+        UI.notificar("Compra Efetuada", `Compraste ${item.icone} ${item.nome}!`);
         UI.atualizarTudo();
-        this.verificarTrofeus();
     },
 
-    desbloquearTrofeu(id) {
-        if (!State.trofeus.includes(id)) {
-            State.trofeus.push(id);
-            const trofeu = DB.trofeus.find(t => t.id === id);
-            if (trofeu) {
-                UI.notificar("🏆 Novo Troféu!", `${trofeu.icon} ${trofeu.nome}`);
-                UI.renderTrofeus();
-            }
+    // Adiciona um novo objetivo financeiro customizado
+    adicionarObjetivo() {
+        const nomeEl = document.getElementById("obj-nome");
+        const precoEl = document.getElementById("obj-preco");
+        const iconEl = document.getElementById("obj-icon");
+
+        if (!nomeEl || !precoEl || !iconEl) return;
+
+        const nome = nomeEl.value.trim();
+        const preco = parseFloat(precoEl.value);
+        const icon = iconEl.value.trim() || "🎯";
+
+        if (!nome || isNaN(preco) || preco <= 0) {
+            alert("Preenche todos os campos corretamente!");
+            return;
         }
-    },
 
-    limitarStatus() {
-        if (State.felicidade > 100) State.felicidade = 100;
-        if (State.felicidade < 0) State.felicidade = 0;
-        if (State.social > 100) State.social = 100;
-        if (State.social < 0) State.social = 0;
-    },
+        State.objetivosAtivos.push({
+            id: Date.now(),
+            nome: nome,
+            preco: preco,
+            icon: icon
+        });
 
-    ajustarRendimentoPorIdade() {
-        const idade = document.getElementById("input-idade").value;
-        const rec = document.getElementById("input-rendimento");
-        const label = document.getElementById("label-rendimento-aviso");
+        nomeEl.value = "";
+        precoEl.value = "";
+        iconEl.value = "👟";
         
-        if (idade < 15) { 
-            rec.max = 200; 
-            rec.setAttribute('max', '200'); // <--- Força o HTML a redesenhar a barra
-            label.innerText = "Mesada comum para esta idade."; 
-        }
-        else if (idade < 17) { 
-            rec.max = 300; 
-            rec.setAttribute('max', '300'); // <--- Força o HTML a redesenhar a barra
-            label.innerText = "Mesada + Pequenos favores."; 
-        }
-        else { 
-            rec.max = 400; 
-            rec.setAttribute('max', '400'); // <--- Força o HTML a redesenhar a barra
-            label.innerText = "Podes ter um Part-time leve."; 
+        UI.esconderModalObjetivo();
+        UI.renderObjetivos();
+        UI.notificar("Objetivo Adicionado", `Criaste o objetivo: ${nome}!`);
+    },
+
+    // Altera dinamicamente as regras do slider conforme a idade inserida
+    ajustarRendimentoPorIdade() {
+        const idadeInput = document.getElementById("input-idade");
+        const rec = document.getElementById("input-rendimento");
+        const label = document.getElementById("label-rendimento-info");
+
+        if (!idadeInput || !rec || !label) return;
+
+        const idade = parseInt(idadeInput.value) || 15;
+
+        if (idade <= 15) {
+            rec.max = 50;
+            rec.setAttribute('max', '50');
+            label.innerText = "Apenas pequenas mesadas ou tarefas domésticas.";
+        } else if (idade <= 17) {
+            rec.max = 150;
+            rec.setAttribute('max', '150');
+            label.innerText = "Podes fazer pequenos trabalhos de Verão ou favores.";
+        } else {
+            rec.max = 400;
+            rec.setAttribute('max', '400');
+            label.innerText = "Podes ter um Part-time leve.";
         }
         
         if (parseInt(rec.value) > rec.max) rec.value = rec.max;
-        document.getElementById("valor-rendimento").innerText = rec.value;
+        const valorDisplay = document.getElementById("valor-rendimento");
+        if (valorDisplay) valorDisplay.innerText = rec.value;
     },
+
+    // Valida e concede troféus de mérito
     verificarTrofeus() {
         if (State.poupanca >= 100 && !State.trofeus.includes("poupador")) this.desbloquearTrofeu("poupador");
         if (State.poupanca >= 500 && !State.trofeus.includes("rico")) this.desbloquearTrofeu("rico");
@@ -246,14 +188,76 @@ const Engine = {
         if (State.felicidade === 100 && State.social === 100 && !State.trofeus.includes("equilibrio")) this.desbloquearTrofeu("equilibrio");
     },
 
-    terminarJogoFinal() {
-        const mensagem = `🎉 FIM DA SIMULAÇÃO! 🎉\n\nParabéns ${State.nome}!\n\n💰 Poupança Final: ${State.poupanca.toFixed(2)}€\n🎯 Objetivos Alcançados: ${State.historicoObj.length}\n📅 Meses Vividos: ${State.mes}\n🏆 Troféus: ${State.trofeus.length}/${DB.trofeus.length}`;
-        
-        UI.notificar("🎉 FIM!", `Terminaste com ${State.poupanca.toFixed(2)}€ e ${State.historicoObj.length} objetivos!`);
-        setTimeout(() => {
-            if (confirm(mensagem + "\n\nQueres jogar de novo?")) {
-                window.location.reload();
+    desbloquearTrofeu(idTrofeu) {
+        State.trofeus.push(idTrofeu);
+        UI.renderTrofeus();
+        UI.notificar("🏆 Trofeu Desbloqueado!", `Ganhaste a insígnia: ${idTrofeu.toUpperCase()}`);
+    },
+
+    // ESTA FUNÇÃO FOI RENOMEADA PARA CASAR COM O TEU HTML!
+    avancarMes() {
+        if (State.jogoTerminado) return;
+
+        // 1. Calcula juros da poupança
+        if (State.poupanca > 0 && State.bancoDados) {
+            const jurosGanhos = State.poupanca * State.bancoDados.juro;
+            State.poupanca += jurosGanhos;
+        }
+
+        // 2. Adiciona o rendimento mensal ao bolso
+        State.bolso += State.receita;
+
+        // 3. Atualiza os contadores temporais e reduz status de bem-estar
+        State.mes += 1;
+        State.felicidade = Math.max(0, State.felicidade - 10);
+        State.social = Math.max(0, State.social - 10);
+
+        this.verificarTrofeus();
+
+        // 4. Verifica o fim da simulação (12 meses)
+        if (State.mes > 12) {
+            this.terminarJogoFinal();
+            return;
+        }
+
+        UI.atualizarTudo();
+
+        // 5. Sorteia e dispara os dilemas cadastrados no db.js
+        if (DB.dilemas && DB.dilemas.length > 0) {
+            const dilemaAleatorio = DB.dilemas[Math.floor(Math.random() * DB.dilemas.length)];
+            if (typeof UI.mostrarDilema === "function") {
+                UI.mostrarDilema(dilemaAleatorio);
             }
-        }, 1000);
+        }
+    },
+
+    // Trata a escolha de opções dentro de um dilema ativo
+    resolverDilema(custo, fel, soc) {
+        // Mecânica de proteção de imprevistos do Millennium GO!
+        if (custo < 0 && State.seguroAtivo) {
+            custo = 0;
+            State.seguroAtivo = false;
+            UI.notificar("🛡️ Seguro Ativado", "O Millennium GO! cobriu o teu primeiro imprevisto!");
+        }
+
+        State.bolso += custo;
+        State.felicidade = Math.max(0, Math.min(100, State.felicidade + fel));
+        State.social = Math.max(0, Math.min(100, State.social + soc));
+
+        if (typeof UI.esconderDilema === "function") {
+            UI.esconderDilema();
+        } else {
+            const modal = document.getElementById("modal-dilema");
+            if (modal) modal.classList.add("hidden");
+        }
+
+        UI.atualizarTudo();
+    },
+
+    // Finaliza a simulação e expõe o painel final
+    terminarJogoFinal() {
+        State.jogoTerminado = true;
+        const mensagem = `🎉 FIM DA SIMULAÇÃO! 🎉\n\nParabéns ${State.nome}!\n\n💰 Poupança Final: ${State.poupanca.toFixed(2)}€\n🎯 Objetivos Alcançados: ${State.historicoObj.length}\n📅 Meses Vividos: ${State.mes - 1}\n🏆 Trofeus Desbloqueados: ${State.trofeus.length}`;
+        alert(mensagem);
     }
 };
