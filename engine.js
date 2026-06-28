@@ -220,9 +220,9 @@ const Engine = {
         const rec = document.getElementById("input-rendimento");
         const label = document.getElementById("label-rendimento-aviso");
         
-        if (idade < 15) { rec.max = 30; label.innerText = "Mesada comum para esta idade."; }
-        else if (idade < 17) { rec.max = 60; label.innerText = "Mesada + Pequenos favores."; }
-        else { rec.max = 200; label.innerText = "Podes ter um Part-time leve."; }
+        if (idade < 15) { rec.max = 200; label.innerText = "Mesada comum para esta idade."; }
+        else if (idade < 17) { rec.max = 300; label.innerText = "Mesada + Pequenos favores."; }
+        else { rec.max = 400; label.innerText = "Podes ter um Part-time leve."; }
         
         if (parseInt(rec.value) > rec.max) rec.value = rec.max;
         document.getElementById("valor-rendimento").innerText = rec.value;
