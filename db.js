@@ -7,7 +7,7 @@ const DB = {
         bonus: 0, 
         icone: "fa-building-columns", 
         cor: "bg-blue-600", 
-        desc: "✅ Vantagem: Balcões físicos em todo o país e alta segurança.<br>❌ Desvantagem: Juro muito baixo (0.5%/mês) e taxa de ativação de 5€.",
+        desc: "✅ Vantagem: Rede de balcões em todo o país e atendimento personalizado para jovens.<br>❌ Desvantagem: Juros muito baixos e taxa de ativação de 5€ no primeiro mês.",
         custo: 5 
     },
     { 
@@ -17,7 +17,7 @@ const DB = {
         bonus: 10, 
         icone: "fa-mobile-screen", 
         cor: "bg-slate-800", 
-        desc: "✅ Vantagem: Conta 100% grátis, bónus de 10€ e juro alto (2%/mês).<br>❌ Desvantagem: Sem balcões físicos e apoio ao cliente demorado.", 
+        desc: "✅ Vantagem: Conta digital sem comissões, bónus de 10€ e juros altos para jovens.<br>❌ Desvantagem: Não tem balcões físicos e o suporte é apenas online.", 
         custo: 0 
     },
     { 
@@ -27,7 +27,7 @@ const DB = {
         bonus: 0, 
         icone: "fa-shield", 
         cor: "bg-pink-600", 
-        desc: "✅ Vantagem: Juro mediano (1%/mês) e o primeiro imprevisto do jogo é grátis.<br>❌ Desvantagem: Obriga a usar a App e sem bónus inicial.", 
+        desc: "✅ Vantagem: Cartão com vantagens para emergências e primeiro imprevisto do jogo grátis.<br>❌ Desvantagem: Dependes da app e não tens bónus inicial de abertura.", 
         custo: 0 
     },
     { 
@@ -37,7 +37,7 @@ const DB = {
         bonus: 0, 
         icone: "fa-fire", 
         cor: "bg-red-600", 
-        desc: "✅ Vantagem: 20% de Desconto em todos os itens da categoria Digital.<br>❌ Desvantagem: Juro baixo (1.2%/mês) se não gastares na loja.", 
+        desc: "✅ Vantagem: Desconto de 20% em compras digitais e boas promoções online.<br>❌ Desvantagem: Juros mais baixos e regras de desconto só se aplica a compras digitais.", 
         custo: 0 
     }
             ],
