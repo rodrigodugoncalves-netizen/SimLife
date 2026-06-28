@@ -76,9 +76,8 @@ const Engine = {
             UI.flutuarTexto(e, `-${precoFinal.toFixed(1)}€`, "text-red-500");
             UI.notificar("Loja", `Compraste ${item.nome}! 😊+${item.fel || 0} 👥+${item.soc || 0}`);
             
-            // Lógica interna para rastrear troféu de compras
             if(!State.historicoObj.includes(itemId)) {
-                State.totalChamadasFamilia += 1; // Usado temporariamente para contar compras
+                State.totalChamadasFamilia += 1; 
             }
 
             UI.atualizarTudo();
@@ -136,11 +135,10 @@ const Engine = {
         if (!State.bancoDados) { UI.notificar("Erro", "Inicia o jogo primeiro!"); return; }
         
         const mesesPassados = State.mes - State.ultimoMesFamilia;
-        // BLOQUEIO TOTAL E AUMENTADO: Alterado de 2 para 5 meses
         if (mesesPassados < 5) {
             const mesesEmFalta = 5 - mesesPassados;
             UI.notificar("Família", `Acesso Bloqueado! Faltam ${mesesEmFalta} ${mesesEmFalta === 1 ? 'mês' : 'meses'} para poderes voltar a ligar à família!`);
-            return; // Bloqueia mesmo a execução aqui
+            return; 
         }
 
         State.ultimoMesFamilia = State.mes;
@@ -159,7 +157,7 @@ const Engine = {
             UI.notificar("Família", "Conversa muito agradável! Ganhaste Vida Social.");
         }
 
-        this.desbloquearTrofeu("txt_ligar_av0"); // Auxiliar para disparar a conquista de ligação
+        this.desbloquearTrofeu("txt_ligar_av0"); 
         UI.atualizarTudo();
         this.verificarTrofeus();
     },
@@ -175,7 +173,6 @@ const Engine = {
         State.felicidade -= 12;
         State.social -= 15;
 
-        // Atualização da Idade simulada com base nos meses para a nova conquista
         if (State.mes % 12 === 0 && State.idade < 18) {
             State.idade += 1;
         }
@@ -194,7 +191,7 @@ const Engine = {
             
             if (sorteado.tipo === 'imprevisto' && State.seguroAtivo) {
                 State.seguroAtivo = false; 
-                UI.notificar("Seguro Ativado", "O Millennium GO cobreu o teu imprevisto de forma gratuita!");
+                UI.notificar("Seguro Ativado", "O Millennium GO cobriu o teu imprevisto de forma gratuita!");
                 return;
             }
             
@@ -245,6 +242,8 @@ const Engine = {
         const rec = document.getElementById("input-rendimento");
         const label = document.getElementById("label-rendimento-aviso");
         
+        if (!rec || !label) return;
+
         if (idade < 15) { 
             rec.max = 200; 
             rec.setAttribute('max', '200'); 
@@ -266,13 +265,11 @@ const Engine = {
     },
     
     verificarTrofeus() {
-        // Troféus Originais
         if (State.poupanca >= 100 && !State.trofeus.includes("poupador")) this.desbloquearTrofeu("poupador");
         if (State.poupanca >= 500 && !State.trofeus.includes("rico")) this.desbloquearTrofeu("rico");
         if (State.historicoObj.length >= 1 && !State.trofeus.includes("conquistador")) this.desbloquearTrofeu("conquistador");
         if (State.felicidade === 100 && State.social === 100 && !State.trofeus.includes("equilibrio")) this.desbloquearTrofeu("equilibrio");
         
-        // Verificação dos 4 Novos Troféus
         if (State.trofeus.includes("txt_ligar_av0") && !State.trofeus.includes("familia_unida")) this.desbloquearTrofeu("familia_unida");
         if ((State.poupanca + State.bolso) >= 1000 && !State.trofeus.includes("capitalista")) this.desbloquearTrofeu("capitalista");
         if (State.totalChamadasFamilia >= 5 && !State.trofeus.includes("consumista")) this.desbloquearTrofeu("consumista");
@@ -291,27 +288,30 @@ const Engine = {
     }
 };
 
-// Eventos globais de Input e Teclado sincronizados
-document.getElementById("input-rendimento").addEventListener('input', function(e) {
-    document.getElementById("valor-rendimento").innerText = e.target.value;
-});
+// Sincronização e Listeners Globais
+document.addEventListener('DOMContentLoaded', () => {
+    const inputRendimento = document.getElementById("input-rendimento");
+    if(inputRendimento) {
+        inputRendimento.addEventListener('input', function(e) {
+            document.getElementById("valor-rendimento").innerText = e.target.value;
+        });
+    }
 
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter') {
-        const ecrSetup = document.getElementById('screen-setup');
-        const ecrJogo = document.getElementById('screen-game');
-        const elementoFocado = document.activeElement;
-        
-        if (ecrSetup.classList.contains('hidden') && !ecrJogo.classList.contains('hidden')) {
-            if (elementoFocado.tagName !== 'INPUT' && elementoFocado.tagName !== 'TEXTAREA') {
-                event.preventDefault();
-                Engine.terminarMes(); 
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            const ecrSetup = document.getElementById('screen-setup');
+            const ecrJogo = document.getElementById('screen-game');
+            const elementoFocado = document.activeElement;
+            
+            if (ecrSetup && ecrJogo && ecrSetup.classList.contains('hidden') && !ecrJogo.classList.contains('hidden')) {
+                if (elementoFocado && elementoFocado.tagName !== 'INPUT' && elementoFocado.tagName !== 'TEXTAREA') {
+                    event.preventDefault();
+                    Engine.terminarMes(); 
+                }
             }
         }
-    }
-});
+    });
 
-window.onload = () => {
     UI.renderBancos();
     Engine.ajustarRendimentoPorIdade();
-};
+});

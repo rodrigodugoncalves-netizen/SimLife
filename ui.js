@@ -264,11 +264,13 @@ const UI = {
     },
 
     mostrarModalObjetivo() { 
-        document.getElementById("modal-objetivo").classList.remove("hidden"); 
+        document.getElementById("modal-objective")?.classList.remove("hidden"); // Adaptado caso precises
+        document.getElementById("modal-objetivo")?.classList.remove("hidden"); 
     },
     
     esconderModalObjetivo() { 
-        document.getElementById("modal-objetivo").classList.add("hidden"); 
+        document.getElementById("modal-objective")?.classList.add("hidden");
+        document.getElementById("modal-objetivo")?.classList.add("hidden"); 
     },
 
     mostrarEvento(dilema) {
