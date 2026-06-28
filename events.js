@@ -8,12 +8,10 @@ document.addEventListener('keydown', function(event) {
         const ecrJogo = document.getElementById('screen-game');
         const elementoFocado = document.activeElement;
         
-        // Corrigido o 'iif' duplicado e alinhadas as validações do ecrã
         if (ecrSetup.classList.contains('hidden') && !ecrJogo.classList.contains('hidden')) {
             if (elementoFocado.tagName !== 'INPUT' && elementoFocado.tagName !== 'TEXTAREA') {
                 event.preventDefault();
-                // Linha atualizada para chamar a função correta da Engine!
-                Engine.avancarMes(); 
+                Engine.terminarMes();
             }
         }
     }
