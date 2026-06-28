@@ -95,7 +95,7 @@ const UI = {
 
             return `
                 <button onclick="State.categoriaAtual = '${cat.id}'; UI.renderFiltros(); UI.renderLoja();" 
-                        class="px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all duration-700 ${classeBtn}">
+                        class="px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all duration-300 ${classeBtn}">
                     <i class="fa-solid ${cat.icone}"></i> ${cat.nome}
                 </button>
             `;
@@ -117,16 +117,15 @@ const UI = {
         }
 
         container.innerHTML = itens.map(item => {
-            const bloqueado = State.idade < item.minIdagedade; // Caso o teu state use minIdade
-            const idadeLimite = item.minIdade || item.minIdagedade;
-            const isBloqueado = State.idade < idadeLimite;
+            const limiteIdade = item.minIdade || item.minIdagedade;
+            const isBloqueado = State.idade < limiteIdade;
             
             if (isBloqueado) {
                 return `
                     <div class="bg-slate-100 border-2 border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center opacity-60">
                         <span class="text-3xl mb-2">🔒</span>
                         <h4 class="font-black text-slate-700 text-sm">${item.nome}</h4>
-                        <p class="text-[11px] font-extrabold text-red-500 uppercase tracking-wider mt-1">Disponível aos ${idadeLimite} anos</p>
+                        <p class="text-[11px] font-extrabold text-red-500 uppercase tracking-wider mt-1">Disponível aos ${limiteIdade} anos</p>
                     </div>
                 `;
             }
@@ -219,7 +218,6 @@ const UI = {
 
         const bancos = DB.bancos || [];
         container.innerHTML = bancos.map(b => {
-            // Mapeia e gera os elementos das listas com Tailwind clean
             const vantagensLista = (b.vantagens || []).map(v => `
                 <li class="flex items-start gap-1.5 text-slate-600">
                     <i class="fa-solid fa-check text-emerald-500 text-[10px] mt-1 shrink-0"></i>

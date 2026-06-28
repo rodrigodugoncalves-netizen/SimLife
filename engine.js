@@ -25,6 +25,7 @@ const Engine = {
         UI.atualizarTudo();
         UI.renderLoja();
         UI.renderTrofeus();
+        this.verificarBloqueioFamilia();
         UI.notificar("Simulação Iniciada", `Bem-vindo ao teu futuro financeiro, ${State.nome}!`);
     },
 
@@ -54,21 +55,20 @@ const Engine = {
         
         document.getElementById("banco-valor").value = "";
         UI.atualizarTudo();
+        this.verificarTrofeus();
     },
 
     comprarItem(e, itemId) {
         const item = DB.produtos.find(l => l.id === itemId);
         if (!item) return;
 
-        // Limitação extra por idade salvaguardada na lógica de compra
-        const idadeLimite = item.minIdade || item.minIdagedade;
-        if (State.idade < idadeLimite) {
+        const limiteIdade = item.minIdade || item.minIdagedade;
+        if (State.idade < limiteIdade) {
             UI.notificar("Bloqueado", "Ainda não tens idade para comprar este item.");
             return;
         }
 
         let precoFinal = item.preco;
-        // Mantém lógica de bónus caso adiciones o banco Santander no futuro
         if (State.bancoId === 'santander' && item.cat === 'digital') {
             precoFinal = item.preco * 0.8;
         }
@@ -77,6 +77,8 @@ const Engine = {
             State.bolso -= precoFinal;
             State.felicidade += (item.fel || 0);
             State.social += (item.soc || 0);
+            
+            State.comprouItemEsteMes = true; // Sinalizador para quebrar o minimalista
             this.limitarStatus();
             
             UI.flutuarTexto(e, `-${precoFinal.toFixed(1)}€`, "text-red-500");
@@ -132,20 +134,32 @@ const Engine = {
         }
     },
 
+    verificarBloqueioFamilia() {
+        const botaoFamilia = document.getElementById("btn-ligar-familia");
+        if (!botaoFamilia) return;
+
+        const mesesPassados = State.mes - State.ultimoMesFamilia;
+        
+        if (mesesPassados < 3) {
+            const mesesEmFalta = 3 - mesesPassados;
+            botaoFamilia.disabled = true;
+            botaoFamilia.innerHTML = `<i class="fa-solid fa-phone-slash mr-2"></i> Família (Bloqueado por ${mesesEmFalta}M)`;
+            botaoFamilia.className = "w-full bg-slate-200 text-slate-400 font-black py-3 px-4 rounded-xl cursor-not-allowed text-xs uppercase tracking-wider border-b-4 border-slate-300";
+        } else {
+            botaoFamilia.disabled = false;
+            botaoFamilia.innerHTML = `<i class="fa-solid fa-phone mr-2"></i> Ligar à Família`;
+            botaoFamilia.className = "w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-3 px-4 rounded-xl btn-solid text-xs uppercase tracking-wider border-b-4 border-purple-900";
+        }
+    },
+
     ligarAosAvos(e) {
         if (!State.bancoDados) { UI.notificar("Erro", "Inicia o jogo primeiro!"); return; }
         
-        // CÁLCULO DO LIMITE: O mês atual menos o mês da última chamada tem de ser maior ou igual a 2
         const mesesPassados = State.mes - State.ultimoMesFamilia;
-        
-        if (mesesPassados < 2) {
-            const mesesEmFalta = 2 - mesesPassados;
-            UI.notificar("Família", `Falta ${mesesEmFalta} ${mesesEmFalta === 1 ? 'mês' : 'meses'} para poderes voltar a ligar à família!`);
-            return;
-        }
+        if (mesesPassados < 3) return; 
 
-        // Se passou a validação, atualiza o registo para o mês atual
         State.ultimoMesFamilia = State.mes;
+        State.totalChamadasFamilia++;
         
         State.social += 15;
         State.felicidade += 5;
@@ -159,9 +173,12 @@ const Engine = {
             UI.notificar("Prenda de Família", `Os teus avós deram-te ${ganho}€ às escondidas! 🪙`);
         } else {
             UI.flutuarTexto(e, "+Social", "text-purple-500");
-            UI.notificar("Família", "Conversa muito agradável! Ganhaste Vida Social.");
+            UI.notificar("Família", "Conversa maravilhosa! Guardaste boas recordações.");
         }
+        
         UI.atualizarTudo();
+        this.verificarBloqueioFamilia();
+        this.verificarTrofeus();
     },
 
     terminarMes() {
@@ -177,7 +194,15 @@ const Engine = {
         State.social -= 15;
         this.limitarStatus();
 
+        // Controladores lógicos de tempo estável para os novos troféus
+        if (State.felicidade >= 80) { State.mesesFelicidadeAlta++; } 
+        else { State.mesesFelicidadeAlta = 0; }
+        
+        if (!State.comprouItemEsteMes) { State.mesesSemGastar++; }
+        State.comprouItemEsteMes = false;
+
         UI.atualizarTudo();
+        this.verificarBloqueioFamilia();
         
         if (State.mes > 60) {
             setTimeout(() => { this.terminarJogoFinal(); }, 300);
@@ -190,13 +215,13 @@ const Engine = {
             
             if (sorteado.tipo === 'imprevisto' && State.seguroAtivo) {
                 State.seguroAtivo = false; 
-                UI.notificar("Seguro Ativado", "O Millennium GO cobriu o teu imprevisto de forma gratuita!");
+                UI.notificar("Seguro Ativado", "O banco cobriu o teu imprevisto!");
                 return;
             }
             
             setTimeout(() => { UI.mostrarEvento(sorteado); }, 300);
         } else {
-            UI.notificar("Novo Mês", `Avançaste para o Mês ${State.mes}. A tua mesada caiu na carteira!`);
+            UI.notificar("Novo Mês", `Avançaste para o Mês ${State.mes}. A mesada caiu na carteira!`);
         }
         
         this.verificarTrofeus();
@@ -204,7 +229,7 @@ const Engine = {
 
     processarAcaoEvento(custo, fel, soc) {
         if (custo < 0 && State.bolso < Math.abs(custo)) {
-            UI.notificar("Insolvente", "Não tens dinheiro suficiente no bolso! Ficas de castigo (-Felicidade).");
+            UI.notificar("Insolvente", "Sem dinheiro! Ficas de castigo (-Felicidade).");
             State.felicidade -= 25;
         } else {
             State.bolso += custo;
@@ -262,18 +287,24 @@ const Engine = {
     },
     
     verificarTrofeus() {
+        // Troféus Clássicos
         if (State.poupanca >= 100 && !State.trofeus.includes("poupador")) this.desbloquearTrofeu("poupador");
         if (State.poupanca >= 500 && !State.trofeus.includes("rico")) this.desbloquearTrofeu("rico");
         if (State.historicoObj.length >= 1 && !State.trofeus.includes("conquistador")) this.desbloquearTrofeu("conquistador");
         if (State.felicidade === 100 && State.social === 100 && !State.trofeus.includes("equilibrio")) this.desbloquearTrofeu("equilibrio");
+        
+        // Verificação das 4 Novas Conquistas
+        if (State.mesesFelicidadeAlta >= 5 && !State.trofeus.includes("estudioso")) this.desbloquearTrofeu("estudioso");
+        if (State.poupanca >= 1000 && !State.trofeus.includes("capitalista")) this.desbloquearTrofeu("capitalista");
+        if (State.mes >= 10 && State.mesesSemGastar >= 10 && !State.trofeus.includes("minimalista")) this.desbloquearTrofeu("minimalista");
+        if (State.totalChamadasFamilia >= 3 && !State.trofeus.includes("familia")) this.desbloquearTrofeu("familia");
     },
 
     terminarJogoFinal() {
-        const mensagem = `🎉 FIM DA SIMULAÇÃO! 🎉\n\nParabéns ${State.nome}!\n\n💰 Poupança Final: ${State.poupanca.toFixed(2)}€\n🎯 Objetivos Alcançados: ${State.historicoObj.length}\n📅 Meses Vividos: ${State.mes}\n🏆 Troféus: ${State.trofeus.length}/${DB.trofeus.length}`;
-        
-        UI.notificar("🎉 FIM!", `Terminaste com ${State.poupanca.toFixed(2)}€ e ${State.historicoObj.length} metas feitas!`);
+        const mensagem = `🎉 FIM DA SIMULAÇÃO! 🎉\n\nParabéns ${State.nome}!\n\n💰 Poupança Final: ${State.poupanca.toFixed(2)}€\n🎯 Objetivos Alcançados: ${State.historicoObj.length}\n📅 Meses Vividos: ${State.mes}\n🏆 Troféus Desbloqueados: ${State.trofeus.length}/${DB.trofeus.length}`;
+        UI.notificar("🎉 FIM!", "Terminaste a tua simulação financeira!");
         setTimeout(() => {
-            if (confirm(mensagem + "\n\nQueres jogar de novo?")) {
+            if (confirm(mensagem + "\n\nQueres testar uma nova estratégia?")) {
                 window.location.reload();
             }
         }, 1000);

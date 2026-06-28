@@ -16,5 +16,8 @@ const State = {
     trofeus: [],
     mesesSemGastar: 0,
     jogoTerminado: false,
-    ultimoMesFamilia: -5 // Guarda o número do mês em que ligou à família pela última vez
+    ultimoMesFamilia: -5,
+    totalChamadasFamilia: 0,
+    mesesFelicidadeAlta: 0,
+    comprouItemEsteMes: false
 };
