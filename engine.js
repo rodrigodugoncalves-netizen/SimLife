@@ -173,7 +173,7 @@ const Engine = {
         State.felicidade -= 12;
         State.social -= 15;
 
-        if (State.mes % 12 === 0 && State.idade < 18) {
+        if (State.mes % 12 === 0 && State.idade < 16) {
             State.idade += 1;
         }
 
