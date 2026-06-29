@@ -25,7 +25,7 @@ const Engine = {
         UI.atualizarTudo();
         UI.renderLoja();
         UI.renderTrofeus();
-        UI.notificar("Jogo Iniciado", `Bem-vindo ao teu futuro, ${State.nome}!`);
+        UI.notificar("Simulação Iniciada", `Bem-vindo ao teu futuro financeiro, ${State.nome}!`);
     },
 
     transferirDinheiro(e) {
@@ -41,15 +41,15 @@ const Engine = {
                 State.bolso -= valor;
                 State.poupanca += valor;
                 UI.flutuarTexto(e, `-${valor}€`, "text-red-500");
-                UI.notificar("Banco", "Dinheiro guardado na poupança!");
-            } else { UI.notificar("Erro", "Não tens esse dinheiro no bolso."); }
+                UI.notificar("Banco", "Dinheiro guardado na conta poupança!");
+            } else { UI.notificar("Erro", "Não tens esse dinheiro físico no bolso."); }
         } else {
             if (State.poupanca >= valor) {
                 State.poupanca -= valor;
                 State.bolso += valor;
                 UI.flutuarTexto(e, `+${valor}€`, "text-emerald-500");
-                UI.notificar("Banco", "Dinheiro levantado para o bolso!");
-            } else { UI.notificar("Erro", "Não tens esse valor no banco."); }
+                UI.notificar("Banco", "Dinheiro levantado para o teu bolso!");
+            } else { UI.notificar("Erro", "Não tens esse valor guardado no banco."); }
         }
         
         document.getElementById("banco-valor").value = "";
@@ -57,14 +57,16 @@ const Engine = {
     },
 
     comprarItem(e, itemId) {
-        const item = DB.loja.find(l => l.id === itemId);
+        const item = DB.produtos.find(l => l.id === itemId);
         if (!item) return;
 
-        let precoFinal = item.preco;
-        if (State.bancoId === 'santander' && item.cat === 'digital') {
-            precoFinal = item.preco * 0.8;
+        const idadeLimite = item.minIdade;
+        if (State.idade < idadeLimite) {
+            UI.notificar("Bloqueado", "Ainda não tens idade para comprar este item.");
+            return;
         }
 
+        let precoFinal = item.preco;
         if (State.bolso >= precoFinal) {
             State.bolso -= precoFinal;
             State.felicidade += (item.fel || 0);
@@ -72,7 +74,12 @@ const Engine = {
             this.limitarStatus();
             
             UI.flutuarTexto(e, `-${precoFinal.toFixed(1)}€`, "text-red-500");
-            UI.notificar("Compra", `Compraste ${item.nome}!`);
+            UI.notificar("Loja", `Compraste ${item.nome}! 😊+${item.fel || 0} 👥+${item.soc || 0}`);
+            
+            if(!State.historicoObj.includes(itemId)) {
+                State.totalChamadasFamilia += 1; 
+            }
+
             UI.atualizarTudo();
             this.verificarTrofeus();
         } else {
@@ -117,7 +124,7 @@ const Engine = {
                 confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
             }
             
-            UI.notificar("🎉 VITÓRIA!", `Compraste o teu objetivo: ${obj.nome}!`);
+            UI.notificar("🎉 VITÓRIA!", `Alcançaste a tua meta: ${obj.nome}!`);
             UI.renderObjetivos();
             UI.atualizarTudo();
             this.verificarTrofeus();
@@ -127,6 +134,14 @@ const Engine = {
     ligarAosAvos(e) {
         if (!State.bancoDados) { UI.notificar("Erro", "Inicia o jogo primeiro!"); return; }
         
+        const mesesPassados = State.mes - State.ultimoMesFamilia;
+        if (mesesPassados < 5) {
+            const mesesEmFalta = 5 - mesesPassados;
+            UI.notificar("Família", `Acesso Bloqueado! Faltam ${mesesEmFalta} ${mesesEmFalta === 1 ? 'mês' : 'meses'} para poderes voltar a ligar à família!`);
+            return; 
+        }
+
+        State.ultimoMesFamilia = State.mes;
         State.social += 15;
         State.felicidade += 5;
         this.limitarStatus();
@@ -136,26 +151,33 @@ const Engine = {
             const ganho = prendas[Math.floor(Math.random() * prendas.length)];
             State.bolso += ganho;
             UI.flutuarTexto(e, `+${ganho}€`, "text-emerald-500");
-            UI.notificar("Prenda de Família", `Os teus avós deram-te ${ganho}€ às escondidas!`);
+            UI.notificar("Prenda de Família", `Os teus avós deram-te ${ganho}€ às escondidas! 🪙`);
         } else {
             UI.flutuarTexto(e, "+Social", "text-purple-500");
+            UI.notificar("Família", "Conversa muito agradável! Ganhaste Vida Social.");
         }
+
+        this.desbloquearTrofeu("txt_ligar_av0"); 
         UI.atualizarTudo();
+        this.verificarTrofeus();
     },
 
     terminarMes() {
         if (!State.bancoDados) { UI.notificar("Erro", "Inicia o jogo primeiro!"); return; }
         
         State.mes += 1;
-        
         let juroGanho = State.poupanca * State.bancoDados.juro;
         State.poupanca += juroGanho;
         State.bolso += State.receita;
         
         State.felicidade -= 12;
         State.social -= 15;
-        this.limitarStatus();
 
+        if (State.mes % 12 === 0 && State.idade < 16) {
+            State.idade += 1;
+        }
+
+        this.limitarStatus();
         UI.atualizarTudo();
         
         if (State.mes > 60) {
@@ -175,7 +197,7 @@ const Engine = {
             
             setTimeout(() => { UI.mostrarEvento(sorteado); }, 300);
         } else {
-            UI.notificar("Novo Mês", `Mês ${State.mes} começou! Recebeste a tua mesada.`);
+            UI.notificar("Novo Mês", `Avançaste para o Mês ${State.mes}. A tua mesada caiu na carteira!`);
         }
         
         this.verificarTrofeus();
@@ -199,9 +221,9 @@ const Engine = {
 
     desbloquearTrofeu(id) {
         if (!State.trofeus.includes(id)) {
-            State.trofeus.push(id);
             const trofeu = DB.trofeus.find(t => t.id === id);
             if (trofeu) {
+                State.trofeus.push(id);
                 UI.notificar("🏆 Novo Troféu!", `${trofeu.icon} ${trofeu.nome}`);
                 UI.renderTrofeus();
             }
@@ -216,29 +238,48 @@ const Engine = {
     },
 
     ajustarRendimentoPorIdade() {
-        const idade = document.getElementById("input-idade").value;
+        const idade = parseInt(document.getElementById("input-idade").value) || 15;
         const rec = document.getElementById("input-rendimento");
         const label = document.getElementById("label-rendimento-aviso");
         
-        if (idade < 15) { rec.max = 30; label.innerText = "Mesada comum para esta idade."; }
-        else if (idade < 17) { rec.max = 60; label.innerText = "Mesada + Pequenos favores."; }
-        else { rec.max = 200; label.innerText = "Podes ter um Part-time leve."; }
+        if (!rec || !label) return;
+
+        if (idade < 15) { 
+            rec.max = 200; 
+            rec.setAttribute('max', '200'); 
+            label.innerText = "Mesada comum para esta idade."; 
+        }
+        else if (idade < 17) { 
+            rec.max = 300; 
+            rec.setAttribute('max', '300'); 
+            label.innerText = "Mesada + Pequenos favores."; 
+        }
+        else { 
+            rec.max = 400; 
+            rec.setAttribute('max', '400'); 
+            label.innerText = "Podes ter um Part-time leve."; 
+        }
         
         if (parseInt(rec.value) > rec.max) rec.value = rec.max;
         document.getElementById("valor-rendimento").innerText = rec.value;
     },
-
+    
     verificarTrofeus() {
         if (State.poupanca >= 100 && !State.trofeus.includes("poupador")) this.desbloquearTrofeu("poupador");
         if (State.poupanca >= 500 && !State.trofeus.includes("rico")) this.desbloquearTrofeu("rico");
         if (State.historicoObj.length >= 1 && !State.trofeus.includes("conquistador")) this.desbloquearTrofeu("conquistador");
         if (State.felicidade === 100 && State.social === 100 && !State.trofeus.includes("equilibrio")) this.desbloquearTrofeu("equilibrio");
+        
+        if (State.trofeus.includes("txt_ligar_av0") && !State.trofeus.includes("familia_unida")) this.desbloquearTrofeu("familia_unida");
+        if ((State.poupanca + State.bolso) >= 1000 && !State.trofeus.includes("capitalista")) this.desbloquearTrofeu("capitalista");
+        if (State.totalChamadasFamilia >= 5 && !State.trofeus.includes("consumista")) this.desbloquearTrofeu("consumista");
+        if (State.idade >= 18 && !State.trofeus.includes("independente")) this.desbloquearTrofeu("independente");
     },
 
     terminarJogoFinal() {
         const mensagem = `🎉 FIM DA SIMULAÇÃO! 🎉\n\nParabéns ${State.nome}!\n\n💰 Poupança Final: ${State.poupanca.toFixed(2)}€\n🎯 Objetivos Alcançados: ${State.historicoObj.length}\n📅 Meses Vividos: ${State.mes}\n🏆 Troféus: ${State.trofeus.length}/${DB.trofeus.length}`;
         
-        UI.notificar("🎉 FIM!", `Terminaste com ${State.poupanca.toFixed(2)}€ e ${State.historicoObj.length} objetivos!`);
+        UI.notificar("🎉 FIM!", `Terminaste com ${State.poupanca.toFixed(2)}€ e ${State.historicoObj.length} metas feitas!`);
         setTimeout(() => {
             if (confirm(mensagem + "\n\nQueres jogar de novo?")) {
                 window.location.reload();
@@ -246,3 +287,31 @@ const Engine = {
         }, 1000);
     }
 };
+
+// Sincronização e Listeners Globais
+document.addEventListener('DOMContentLoaded', () => {
+    const inputRendimento = document.getElementById("input-rendimento");
+    if(inputRendimento) {
+        inputRendimento.addEventListener('input', function(e) {
+            document.getElementById("valor-rendimento").innerText = e.target.value;
+        });
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            const ecrSetup = document.getElementById('screen-setup');
+            const ecrJogo = document.getElementById('screen-game');
+            const elementoFocado = document.activeElement;
+            
+            if (ecrSetup && ecrJogo && ecrSetup.classList.contains('hidden') && !ecrJogo.classList.contains('hidden')) {
+                if (elementoFocado && elementoFocado.tagName !== 'INPUT' && elementoFocado.tagName !== 'TEXTAREA') {
+                    event.preventDefault();
+                    Engine.terminarMes(); 
+                }
+            }
+        }
+    });
+
+    UI.renderBancos();
+    Engine.ajustarRendimentoPorIdade();
+});
