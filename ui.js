@@ -24,196 +24,287 @@ const UI = {
     },
 
     atualizarTudo() {
-        document.getElementById("ui-jogador-nome").innerText = State.nome;
-        document.getElementById("ui-jogador-idade").innerText = `${State.idade} Anos`;
-        document.getElementById("ui-mes-atual").innerText = State.mes;
-        document.getElementById("ui-rodape-receita").innerText = `+${State.receita}€`;
-        
-        document.getElementById("ui-saldo").innerText = `${State.bolso.toFixed(2)} €`;
-        document.getElementById("ui-poupanca").innerText = `${State.poupanca.toFixed(2)} €`;
-        
-        document.getElementById("ui-felicidade-texto").innerText = `${State.felicidade}%`;
-        document.getElementById("ui-felicidade-barra").style.width = `${State.felicidade}%`;
-        document.getElementById("ui-social-texto").innerText = `${State.social}%`;
-        document.getElementById("ui-social-barra").style.width = `${State.social}%`;
-
-        document.getElementById("ui-felicidade-barra").className = State.felicidade > 40 ? "bg-yellow-400 h-3 rounded-full transition-all" : "bg-red-500 h-3 rounded-full transition-all";
-        
-        const bannerSocial = document.getElementById("alerta-social-banner");
-        if (State.social < 20) {
-            bannerSocial.classList.remove("hidden");
-            document.getElementById("ui-social-barra").className = "bg-red-500 h-3 rounded-full transition-all";
-        } else {
-            bannerSocial.classList.add("hidden");
-            document.getElementById("ui-social-barra").className = "bg-purple-500 h-3 rounded-full transition-all";
+        if (document.getElementById("ui-jogador-nome")) {
+            document.getElementById("ui-jogador-nome").innerText = State.nome || "Jogador";
+        }
+        if (document.getElementById("ui-jogador-idade")) {
+            document.getElementById("ui-jogador-idade").innerText = `${State.idade} Anos`;
+        }
+        if (document.getElementById("ui-mes-atual")) {
+            document.getElementById("ui-mes-atual").innerText = `Mês ${State.mes}`;
+        }
+        if (document.getElementById("ui-saldo")) {
+            document.getElementById("ui-saldo").innerText = `${State.bolso.toFixed(2)} €`;
+        }
+        if (document.getElementById("ui-bolso-header")) {
+            document.getElementById("ui-bolso-header").innerText = `${State.bolso.toFixed(2)}€`;
+        }
+        if (document.getElementById("ui-poupanca")) {
+            document.getElementById("ui-poupanca").innerText = `${State.poupanca.toFixed(2)} €`;
+        }
+        if (document.getElementById("ui-poupanca-header")) {
+            document.getElementById("ui-poupanca-header").innerText = `${State.poupanca.toFixed(2)}€`;
+        }
+        if (document.getElementById("ui-rodape-receita")) {
+            document.getElementById("ui-rodape-receita").innerText = `+${State.receita}€`;
         }
 
+        this.atualizarBarraProgresso("ui-felicidade-barra", "ui-felicidade-texto", State.felicidade);
+        this.atualizarBarraProgresso("ui-social-barra", "ui-social-texto", State.social);
+
         if (State.bancoDados) {
-            document.getElementById("ui-taxa-juro").innerText = `${(State.bancoDados.juro * 100).toFixed(1)}%`;
-            document.getElementById("ui-previsao-juros").innerText = (State.poupanca * State.bancoDados.juro).toFixed(2);
+            if (document.getElementById("ui-taxa-juro")) {
+                document.getElementById("ui-taxa-juro").innerText = `${(State.bancoDados.juro * 100).toFixed(1)}%`;
+            }
+            if (document.getElementById("ui-previsao-juros")) {
+                document.getElementById("ui-previsao-juros").innerText = (State.poupanca * State.bancoDados.juro).toFixed(2);
+            }
+        }
+
+        const bannerSocial = document.getElementById("alerta-social-banner");
+        if (bannerSocial) {
+            if (State.social < 20) bannerSocial.classList.remove("hidden");
+            else bannerSocial.classList.add("hidden");
         }
     },
 
-    renderBancos() {
-        const html = DB.bancos.map(b => `
-            <label class="cursor-pointer group">
-                <input type="radio" name="banco" value="${b.id}" class="peer sr-only">
-                <div class="border-4 border-slate-200 rounded-2xl p-4 peer-checked:border-blue-600 peer-checked:bg-blue-50 transition-all card-solid flex flex-col h-full">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="${b.cor} text-white w-10 h-10 rounded-lg flex items-center justify-center text-lg shadow-sm">
-                            <i class="fa-solid ${b.icone}"></i>
-                        </div>
-                        <h4 class="font-black text-slate-800">${b.nome}</h4>
-                    </div>
-                    <p class="text-xs font-bold text-slate-500 leading-tight">${b.desc}</p>
-                </div>
-            </label>
-        `).join('');
-        document.getElementById("bancos-container").innerHTML = html;
+    atualizarBarraProgresso(idBarra, idTexto, valor) {
+        const barra = document.getElementById(idBarra);
+        const texto = document.getElementById(idTexto);
+        if (barra) barra.style.width = `${valor}%`;
+        if (texto) texto.innerText = `${valor}%`;
     },
 
     renderFiltros() {
-        const filtrosDiv = document.getElementById("loja-filtros");
-        if (!filtrosDiv) return;
-        const categorias = ["todos", "snacks", "digital", "moda", "saidas", "desporto", "extra"];
-        filtrosDiv.innerHTML = categorias.map(cat => {
-            const label = cat === "todos" ? "Todos" : cat.charAt(0).toUpperCase() + cat.slice(1);
-            const active = State.categoriaAtual === cat;
+        const container = document.getElementById("loja-filtros");
+        if (!container) return;
+
+        const categorias = [
+            { id: "todos", nome: "Todos", icone: "fa-th-large" },
+            { id: "alimentacao", nome: "Alimentação", icone: "fa-utensils" },
+            { id: "utilitarios", nome: "Utilitários", icone: "fa-wrench" },
+            { id: "saude", nome: "Saúde & Desporto", icone: "fa-heartbeat" },
+            { id: "lazer", nome: "Lazer & Saídas", icone: "fa-gamepad" }
+        ];
+
+        container.innerHTML = categorias.map(cat => {
+            const ativo = State.categoriaAtual === cat.id;
+            const classeBtn = ativo 
+                ? "bg-blue-600 text-white border-b-4 border-blue-800 font-black" 
+                : "bg-white text-slate-600 border-2 border-slate-200 font-bold hover:bg-slate-50";
+
             return `
-                <button type="button" onclick="State.categoriaAtual='${cat}'; UI.renderLoja();" class="px-4 py-2 rounded-xl text-xs uppercase btn-solid font-bold ${active ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-800 hover:bg-slate-300'}">
-                    ${label}
+                <button onclick="State.categoriaAtual = '${cat.id}'; UI.renderFiltros(); UI.renderLoja();" 
+                        class="px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all duration-200 ${classeBtn}">
+                    <i class="fa-solid ${cat.icone}"></i> ${cat.nome}
                 </button>
             `;
-        }).join('');
+        }).join("");
     },
 
     renderLoja() {
-        const loja = document.getElementById("loja-produtos");
-        if (!loja) return;
-        loja.innerHTML = "";
-        
-        DB.loja.forEach(item => {
-            if (State.idade < item.minIdade) return;
-            if (State.categoriaAtual !== 'todos' && item.cat !== State.categoriaAtual) return;
-            
-            let precoTxt = `${item.preco}€`;
-            let clickAction = `Engine.comprarItem(event, '${item.id}')`;
+        const container = document.getElementById("loja-produtos");
+        if (!container) return;
 
-            if (item.id === 'livre') {
-                precoTxt = "? €";
-                clickAction = `UI.comprarLivre(event)`;
-            } else if (State.bancoId === 'santander' && item.cat === 'digital') {
-                precoTxt = `<span class="line-through text-slate-400 text-xs">${item.preco}€</span> ${(item.preco * 0.8).toFixed(1)}€`;
+        let itens = DB.produtos || [];
+        if (State.categoriaAtual !== "todos") {
+            itens = itens.filter(item => item.cat === State.categoriaAtual);
+        }
+
+        if (itens.length === 0) {
+            container.innerHTML = `<p class="col-span-full text-center text-slate-400 font-bold py-8">Nenhum item disponível nesta categoria.</p>`;
+            return;
+        }
+
+        container.innerHTML = itens.map(item => {
+            const idadeLimite = item.minIdade || 13;
+            const isBloqueado = State.idade < idadeLimite;
+            
+            if (isBloqueado) {
+                return `
+                    <div class="bg-slate-100 border-2 border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center opacity-60">
+                        <span class="text-3xl mb-2">🔒</span>
+                        <h4 class="font-black text-slate-700 text-sm">${item.nome}</h4>
+                        <p class="text-[11px] font-extrabold text-red-500 uppercase tracking-wider mt-1">Disponível aos ${idadeLimite} anos</p>
+                    </div>
+                `;
             }
 
-            loja.innerHTML += `
-                <button onclick="${clickAction}" class="bg-white p-4 rounded-2xl border-2 border-slate-200 card-solid flex flex-col items-center hover:bg-slate-50 btn-solid">
-                    <span class="text-4xl mb-2">${item.icone || '❓'}</span>
-                    <span class="font-black text-slate-800 leading-tight mb-1">${item.nome}</span>
-                    <span class="text-xs font-bold text-slate-500 mb-2">${item.fel > 0 ? '+Fel' : ''} ${item.soc > 0 ? '& Soc' : ''}</span>
-                    <span class="mt-auto bg-slate-100 text-slate-800 font-black px-3 py-1 rounded-lg w-full text-center">${precoTxt}</span>
-                </button>
+            return `
+                <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 card-solid flex flex-col justify-between transition-all duration-300">
+                    <div class="flex justify-between items-start">
+                        <span class="text-3xl bg-slate-50 p-2.5 rounded-xl">${item.icone || "📦"}</span>
+                        <span class="bg-blue-50 text-blue-700 font-black text-sm px-3 py-1 rounded-xl">${item.preco}€</span>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="font-black text-slate-800 text-sm">${item.nome}</h4>
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            ${item.fel > 0 ? `<span class="text-[10px] bg-emerald-50 text-emerald-700 font-black px-2 py-0.5 rounded-md">😊 +${item.fel} Fel</span>` : ""}
+                            ${item.soc > 0 ? `<span class="text-[10px] bg-purple-50 text-purple-700 font-black px-2 py-0.5 rounded-md">👥 +${item.soc} Soc</span>` : ""}
+                        </div>
+                    </div>
+                    <button onclick="Engine.comprarItem(event, '${item.id}')" 
+                            class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-white font-black py-2.5 rounded-xl btn-solid text-xs uppercase tracking-wider border-b-4 border-slate-950">
+                        Comprar
+                    </button>
+                </div>
             `;
-        });
-    },
-
-    comprarLivre(e) {
-        const nome = prompt("O que compraste?");
-        if(!nome) return;
-        const preco = parseFloat(prompt(`Quanto custou ${nome}? (€)`));
-        if(isNaN(preco) || preco <= 0) return;
-
-        if(State.bolso >= preco) {
-            State.bolso -= preco;
-            const ganho = Math.min(Math.floor(preco * 0.5), 40);
-            State.felicidade += ganho;
-            Engine.limitarStatus();
-            UI.flutuarTexto(e, `- ${preco}€`, "text-red-500");
-            UI.atualizarTudo();
-        } else {
-            UI.notificar("Erro", "Saldo insuficiente no bolso.");
-        }
+        }).join("");
     },
 
     renderObjetivos() {
-        const list = document.getElementById("lista-objetivos");
-        list.innerHTML = "";
-        
-        State.objetivosAtivos.forEach(obj => {
-            const perc = Math.min((State.poupanca / obj.preco) * 100, 100);
-            const isPronto = perc === 100;
-            
-            list.innerHTML += `
-                <div class="bg-white border-2 border-slate-200 rounded-2xl p-5 relative card-solid">
-                    <button onclick="Engine.removerObjetivo(${obj.id})" class="absolute top-2 right-2 text-slate-300 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="text-4xl">${obj.icon}</span>
-                        <div>
-                            <h4 class="font-black text-slate-800 leading-tight">${obj.nome}</h4>
-                            <span class="text-xs font-bold text-slate-500">Alvo: ${obj.preco.toFixed(2)}€</span>
+        const container = document.getElementById("lista-objetivos");
+        if (!container) return;
+
+        if (State.objetivosAtivos.length === 0) {
+            container.innerHTML = `<p class="text-center text-slate-400 font-bold py-6">Não tens nenhum objetivo definido de momento.</p>`;
+            return;
+        }
+
+        container.innerHTML = State.objetivosAtivos.map(obj => {
+            const progresso = Math.min((State.poupanca / obj.preco) * 100, 100);
+            return `
+                <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 card-solid space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl bg-slate-50 p-2 rounded-xl">${obj.icon || "🎯"}</span>
+                            <div>
+                                <h4 class="font-black text-slate-800 text-sm">${obj.nome}</h4>
+                                <p class="text-xs text-slate-400 font-bold">Meta: <span class="text-slate-700 font-black">${obj.preco}€</span></p>
+                            </div>
+                        </div>
+                        <button onclick="Engine.comprarObjetivo(${obj.id})" 
+                                ${State.poupanca < obj.preco ? "disabled" : ""} 
+                                class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black px-4 py-2.5 rounded-xl btn-solid border-b-4 border-emerald-800 disabled:opacity-40 disabled:pointer-events-none uppercase tracking-wider">
+                            Alcançar
+                        </button>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-black text-slate-500">
+                            <span>Progresso do Mealheiro</span>
+                            <span>${progresso.toFixed(0)}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden border">
+                            <div class="bg-emerald-500 h-full transition-all duration-500" style="width: ${progresso}%"></div>
                         </div>
                     </div>
-                    <div class="w-full bg-slate-100 rounded-full h-3 mb-3">
-                        <div class="bg-blue-500 h-3 rounded-full transition-all" style="width: ${perc}%"></div>
-                    </div>
-                    ${isPronto ? 
-                        `<button onclick="Engine.comprarObjetivo(${obj.id})" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black py-2 rounded-xl btn-solid mt-2 animate-pulse">Adquirir Agora!</button>`
-                        : `<p class="text-xs font-bold text-center text-slate-500 mt-2">Faltam ${(obj.preco - State.poupanca).toFixed(2)}€ no Banco</p>`
-                    }
                 </div>
             `;
-        });
+        }).join("");
     },
 
     renderTrofeus() {
-        const list = document.getElementById("lista-trofeus");
-        if (!list) return;
-        list.innerHTML = "";
-        if (!DB.trofeus || DB.trofeus.length === 0) return;
-        DB.trofeus.forEach(t => {
-            const unlocked = State.trofeus.includes(t.id);
-            list.innerHTML += `
-                <div class="${unlocked ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200 opacity-50 grayscale'} border-2 rounded-2xl p-4 text-center">
-                    <span class="text-4xl block mb-2">${t.icon || t.icone || '🏆'}</span>
-                    <h4 class="font-black text-slate-800 text-sm leading-tight mb-1">${t.nome}</h4>
-                    <p class="text-[10px] font-bold text-slate-500">${t.desc}</p>
+        const container = document.getElementById("lista-trofeus");
+        if (!container) return;
+
+        container.innerHTML = DB.trofeus.map(trf => {
+            const desbloqueado = State.trofeus.includes(trf.id);
+            return `
+                <div class="border-2 rounded-2xl p-4 flex items-center gap-4 transition-all duration-300 ${desbloqueado ? 'bg-white border-slate-100 card-solid' : 'bg-slate-50/50 border-dashed border-slate-200 opacity-50'}">
+                    <span class="text-4xl filter ${desbloqueado ? '' : 'grayscale'}">${trf.icon}</span>
+                    <div>
+                        <h4 class="font-black text-sm ${desbloqueado ? 'text-slate-800' : 'text-slate-400'}">${trf.nome}</h4>
+                        <p class="text-xs text-slate-400 font-bold mt-0.5">${trf.desc}</p>
+                        ${desbloqueado ? '<span class="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md mt-1 inline-block uppercase tracking-wider">Desbloqueado</span>' : '<span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mt-1 inline-block">Bloqueado</span>'}
+                    </div>
                 </div>
             `;
-        });
+        }).join("");
     },
 
-    mostrarEvento(evento) {
-        document.getElementById('evento-titulo').innerText = evento.titulo;
-        document.getElementById('evento-desc').innerText = evento.desc;
-        
-        let icon = "⚠️";
-        let bg = "bg-slate-800";
-        if(evento.tipo === 'sorte') { icon = "🍀"; bg = "bg-emerald-600"; }
-        
-        document.getElementById('evento-icon').innerText = icon;
-        document.getElementById('evento-header').className = `p-6 text-center text-white ${bg}`;
+    renderBancos() {
+        const container = document.getElementById("bancos-container");
+        if (!container) return;
 
-        const acoesDiv = document.getElementById('evento-acoes');
-        acoesDiv.innerHTML = "";
-        
-        evento.acoes.forEach(a => {
-            acoesDiv.innerHTML += `<button onclick="Engine.processarAcaoEvento(${a.custo}, ${a.fel || 0}, ${a.soc || 0})" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-black py-3 rounded-xl btn-solid">${a.txt}</button>`;
-        });
+        const bancos = DB.bancos || [];
+        container.innerHTML = bancos.map(b => {
+            const vantagensLista = (b.vantagens || []).map(v => `
+                <li class="flex items-start gap-1.5 text-slate-600">
+                    <i class="fa-solid fa-check text-emerald-500 text-[10px] mt-1 shrink-0"></i>
+                    <span>${v}</span>
+                </li>
+            `).join("");
 
-        document.getElementById('modal-evento').classList.remove('hidden');
+            const desvantagensLista = (b.desvantagens || []).map(d => `
+                <li class="flex items-start gap-1.5 text-slate-600">
+                    <i class="fa-solid fa-xmark text-rose-500 text-[10px] mt-1 shrink-0"></i>
+                    <span>${d}</span>
+                </li>
+            `).join("");
+
+            return `
+                <label class="relative bg-white border-2 border-slate-200 p-5 rounded-2xl card-solid cursor-pointer flex flex-col gap-4 transition-all duration-200 has-[:checked]:border-blue-500 has-[:checked]:ring-2 has-[:checked]:ring-blue-100 group">
+                    <input type="radio" name="banco" value="${b.id}" class="sr-only" onchange="Engine.ajustarRendimentoPorIdade()">
+                    
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 ${b.cor} text-white flex items-center justify-center rounded-xl text-lg shadow-sm">
+                                <i class="fa-solid ${b.icone}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-slate-800 text-sm">${b.nome}</h4>
+                                <p class="text-[10px] font-extrabold text-blue-600 uppercase tracking-wider mt-0.5">${(b.juro * 100).toFixed(1)}% Juro Base</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-3 flex flex-col gap-3 text-[11px] font-medium leading-relaxed">
+                        <div>
+                            <span class="font-black text-emerald-600 uppercase tracking-wider text-[9px] block mb-1">Vantagens:</span>
+                            <ul class="space-y-1">${vantagensLista}</ul>
+                        </div>
+                        <div>
+                            <span class="font-black text-rose-600 uppercase tracking-wider text-[9px] block mb-1">Desvantagens:</span>
+                            <ul class="space-y-1">${desvantagensLista}</ul>
+                        </div>
+                    </div>
+                </label>
+            `;
+        }).join("");
     },
 
-    esconderEvento() { document.getElementById('modal-evento').classList.add('hidden'); },
-    esconderEventos() { this.esconderEvento(); }, // Função de segurança para evitar quebras por digitação
-    mostrarModalObjetivo() { document.getElementById('modal-objetivo').classList.remove('hidden'); },
-    esconderModalObjetivo() { document.getElementById('modal-objetivo').classList.add('hidden'); },
+    mostrarModalObjetivo() { 
+        document.getElementById("modal-objective")?.classList.remove("hidden"); // Adaptado caso precises
+        document.getElementById("modal-objetivo")?.classList.remove("hidden"); 
+    },
+    
+    esconderModalObjetivo() { 
+        document.getElementById("modal-objective")?.classList.add("hidden");
+        document.getElementById("modal-objetivo")?.classList.add("hidden"); 
+    },
+
+    mostrarEvento(dilema) {
+        document.getElementById("evento-titulo").innerText = dilema.titulo;
+        document.getElementById("evento-desc").innerText = dilema.desc;
+        
+        const containerAcoes = document.getElementById("evento-acoes");
+        containerAcoes.innerHTML = dilema.acoes.map(acao => `
+            <button onclick="Engine.processarAcaoEvento(${acao.custo}, ${acao.fel || 0}, ${acao.soc || 0})" 
+                    class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 px-4 rounded-xl text-sm border-2 border-slate-300 transition-colors">
+                ${acao.txt}
+            </button>
+        `).join("");
+        
+        document.getElementById("modal-evento").classList.remove("hidden");
+    },
+
+    esconderEvento() {
+        document.getElementById("modal-evento").classList.add("hidden");
+    },
 
     notificar(titulo, msg) {
         const toast = document.createElement('div');
         toast.className = 'bg-slate-800 text-white p-4 rounded-xl shadow-xl border-l-4 border-blue-500 toast-enter flex items-start gap-3 w-72';
         toast.innerHTML = `<i class="fa-solid fa-bell text-blue-400 mt-1"></i><div><h4 class="font-black text-sm">${titulo}</h4><p class="text-xs text-slate-300 mt-0.5">${msg}</p></div>`;
-        document.getElementById('toast-container').appendChild(toast);
-        setTimeout(() => { toast.classList.replace('toast-enter', 'toast-exit'); setTimeout(() => toast.remove(), 250); }, 4000);
+        
+        const container = document.getElementById('toast-container');
+        if (container) {
+            container.appendChild(toast);
+            setTimeout(() => { 
+                toast.classList.replace('toast-enter', 'toast-exit'); 
+                setTimeout(() => toast.remove(), 250); 
+            }, 4000);
+        }
     },
 
     flutuarTexto(e, txt, corClass) {
@@ -226,10 +317,11 @@ const UI = {
             floater.style.left = `${rect.left + rect.width / 2 - 20}px`;
             floater.style.top = `${rect.top}px`;
             floater.innerText = txt;
+            
             document.body.appendChild(floater);
             setTimeout(() => floater.remove(), 800);
         } catch (err) {
-            console.error("Erro no flutuarTexto:", err);
+            console.error("Erro no efeito flutuante:", err);
         }
     }
 };
